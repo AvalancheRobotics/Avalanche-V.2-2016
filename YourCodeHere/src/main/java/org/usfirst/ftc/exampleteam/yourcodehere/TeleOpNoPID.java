@@ -320,25 +320,29 @@ public class TeleOpNoPID extends SynchronousOpMode {
             motorSlide.setPower(0);
 
 
-        //adjust the slide servos manually
-        if (gamepad2.left_bumper) {
-            servoShuttle.setPosition(0); //COULD BE 1 ARBITRARY
-        }
-        if (gamepad2.right_bumper) {
-            servoShuttle.setPosition(1); //COULD BE 0 ARBITRARY
+        //adjust the shuttle servo manually
+        if (gamepad2.left_bumper || gamepad2.right_bumper) {
+            if (gamepad2.left_bumper) {
+                servoConveyor.setPosition(0); //COULD BE 1 ARBITRARY
+            }
+            if (gamepad2.right_bumper) {
+                servoConveyor.setPosition(1); //COULD BE 0 ARBITRARY
+            }
+            autoConveyorRunning = false;
+        } else {
+            if (!autoConveyorRunning)
+                servoConveyor.setPosition(.5);
         }
 
 
         //manually adjust the conveyors
         if (gamepad2.right_trigger > .2 || gamepad2.left_trigger > .2) {
             if (gamepad2.right_trigger > .2) //.2 is a threshold so you don't accidentally press it
-                servoConveyor.setPosition(gamepad2.right_trigger / 2 + .5);
+                servoShuttle.setPosition(gamepad2.right_trigger / 2 + .5);
             else if (gamepad2.left_trigger > .2)
-                servoConveyor.setPosition(-gamepad2.left_trigger / 2 + .5);
-            autoConveyorRunning = false;
+                servoShuttle.setPosition(-gamepad2.left_trigger / 2 + .5);
         } else {
-            if (!autoConveyorRunning)
-                servoConveyor.setPosition(.5);
+            servoShuttle.setPosition(.5);
         }
 
         //adjust angle of tape
@@ -500,7 +504,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
             if (scoreToggle == 0) {
                 //extend slides to specified height
                 extendSlide(height);
-                shuttle(isBlue);
+                //shuttle(isBlue);
                 scoreToggle++;
                 return;
             }
@@ -519,10 +523,10 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 //stop conveyor and return to retracted position
                 servoConveyor.setPosition(.5);
                 autoConveyorRunning = false;
-                shuttle(isBlue); //Runs using touch sensor
+                //shuttle(isBlue); //Runs using touch sensor
                 motorSlide.setTargetPosition(startPosSlide);
                 scoreToggle = 0;
-                shuttle(isBlue);
+                //shuttle(isBlue);
             }
             /**
              * NEED TO WRITE METHOD THAT CAN SHUTTLE THE DISPENSER TO A SPECIFIC DISTANCE - most likely
