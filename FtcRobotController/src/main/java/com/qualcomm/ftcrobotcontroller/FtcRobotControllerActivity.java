@@ -546,7 +546,6 @@ public class FtcRobotControllerActivity extends Activity {
                     {
                     if (!legalRCNamePattern.matcher(robotControllerName).matches())
                         {
-                        reportWifiDirectError("\"%s\" is not a legal robot controller name (see <RS02>)", robotControllerName);
                         }
                     }
 
@@ -559,7 +558,6 @@ public class FtcRobotControllerActivity extends Activity {
                         {
                         if (!legalDSNamePattern.matcher(peer.deviceName).matches())
                             {
-                            reportWifiDirectError("\"%s\" is not a legal driver station name (see <RS02>)", peer.deviceName);
                             }
                         }
                     }
