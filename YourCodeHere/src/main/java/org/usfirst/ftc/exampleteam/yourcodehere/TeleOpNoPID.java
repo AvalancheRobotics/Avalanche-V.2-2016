@@ -56,10 +56,18 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private int startPosArm;
     private int startPosSlide;
     private int maxTapeLength;
-    private double botPosition;
-    private double midPosition;
-    private double topPosition;
-    private double dispensingPositionDegrees;
+
+    //Measured in inches
+    private double slideBotPosition;
+    private double slideMidPosition;
+    private double slideTopPosition;
+
+    //Measured in ticks
+    private int armInitPosition;
+    private int armHarvestPosition;
+    private int armDispensePosition;
+    private int armMountainPosition;
+
     //farthest slide can extend without damage
     private int maxSlideLength;
 
@@ -83,6 +91,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private static final double SHELF_STOW_RIGHT = 0; //ARBITRARY
     private static final double SHELF_DISPENSE_LEFT = 0; //ARBITRARY
     private static final double SHELF_DISPENSE_RIGHT = 0; //ARBITRARY
+    private static final double DISPENSER_NEUTRAL = 0; //ARBITRARY
+    private static final double DISPENSER_LEFT = 0;
+    private static final double DISPENSER_RIGHT = 0;
 
 
     // Declare drive motors
@@ -128,6 +139,13 @@ public class TeleOpNoPID extends SynchronousOpMode {
     Servo servoShelfLeft;
     Servo servoShelfRight;
 
+    //Servo for angling dispenser
+    Servo servoDispenserAngle;
+
+    //Servo for dispenser flaps
+    Servo servoLeftFlap;
+    Servo servoRightFlap;
+
     //Initialize and Map All Hardware
     private void hardwareMapping() throws InterruptedException {
         // Initialize drive motors
@@ -164,6 +182,12 @@ public class TeleOpNoPID extends SynchronousOpMode {
         servoShelfLeft = hardwareMap.servo.get("servoShelfLeft");
         servoShelfRight = hardwareMap.servo.get("servoShelfRight");
 
+        // Initialize dispenser angle servo
+        servoDispenserAngle = hardwareMap.servo.get("servoDispenserAngle");
+
+        // Initialize dispenser flap control servos
+        servoLeftFlap = hardwareMap.servo.get("servoLeftFlap");
+        servoRightFlap = hardwareMap.servo.get("servoRightFlap");
 
         // Initialize sensors
 
@@ -209,11 +233,16 @@ public class TeleOpNoPID extends SynchronousOpMode {
         motorArm.setTargetPosition(startPosArm);
 
         //Score heights for slides
-        botPosition = startPosTape + 3000; //ARBITRARY
-        midPosition = startPosTape + 6000; //ARBITRARY
-        topPosition = startPosTape + 9000; //ARBITRARY
+        slideBotPosition = startPosTape + 3000; //ARBITRARY
+        slideMidPosition = startPosTape + 6000; //ARBITRARY
+        slideTopPosition = startPosTape + 9000; //ARBITRARY
         maxSlideLength = startPosTape + 12000; //ARBITRARY
-        dispensingPositionDegrees = startPosArm + 200; //ARBITRARY
+
+        //Arm Positions
+        armInitPosition = startPosArm;
+        armDispensePosition = startPosArm + 3000; //ARBITRARY
+        armHarvestPosition = startPosArm + 3000; //ARBITRARY
+        armMountainPosition = startPosArm + 30; //ARBITRARY
 
         //keep track of max length tape should extend
         maxTapeLength = motorTape.getCurrentPosition() + 6000; //ARBITRARY
@@ -544,17 +573,17 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private void extendSlide(Height height) { //Can be either top mid or bot
         motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
         if (height == Height.TOP) {
-            motorSlide.setTargetPosition((int) (topPosition * TICKS_IN_INCH_SLIDE));
+            motorSlide.setTargetPosition((int) (slideTopPosition * TICKS_IN_INCH_SLIDE));
             return;
         }
 
         if (height == Height.MID) {
-            motorSlide.setTargetPosition((int) (midPosition * TICKS_IN_INCH_SLIDE));
+            motorSlide.setTargetPosition((int) (slideMidPosition * TICKS_IN_INCH_SLIDE));
             return;
         }
 
         if (height == Height.BOT) {
-            motorSlide.setTargetPosition((int) (botPosition * TICKS_IN_INCH_SLIDE));
+            motorSlide.setTargetPosition((int) (slideBotPosition * TICKS_IN_INCH_SLIDE));
             return;
         }
 
@@ -637,11 +666,21 @@ public class TeleOpNoPID extends SynchronousOpMode {
         }
     }
 
-    private void armPosition(boolean down) {
-        if (down) {
-            motorArm.setTargetPosition(startPosArm);
-        } else {
-            motorArm.setTargetPosition((int) (dispensingPositionDegrees * TICKS_IN_DEGREE_ARM));
+    private void setArmPosition(ArmPosition position) {
+        if (ArmPosition.initialize == position) {
+            motorArm.setTargetPosition(armInitPosition);
+        }
+
+        if (ArmPosition.dispense == position) {
+            motorArm.setTargetPosition(armDispensePosition);
+        }
+
+        if (ArmPosition.harvest == position) {
+            motorArm.setTargetPosition(armHarvestPosition);
+        }
+
+        if (ArmPosition.harvest == position) {
+            motorArm.setTargetPosition(armMountainPosition);
         }
     }
 
@@ -651,10 +690,23 @@ public class TeleOpNoPID extends SynchronousOpMode {
      * off the power. This code runs every main loop in the sensorUpdates method
      */
 
-    //IMPROVE
+
+    private void angleDispenser(SlidePosition position) {
+        if (SlidePosition.NEUTRAL == position) {
+            servoDispenserAngle.setPosition(DISPENSER_NEUTRAL);
+        }
+
+        if (SlidePosition.LEFT == position) {
+            servoDispenserAngle.setPosition(DISPENSER_LEFT);
+        }
+
+        if (SlidePosition.RIGHT == position) {
+            servoDispenserAngle.setPosition(DISPENSER_RIGHT);
+        }
+    }
 
     /**
-     * NEEDS WORK
+     * MAY NOT NEED
      */
     private void shuttleAutoStop() {
         if (slidePosition == SlidePosition.NEUTRAL) {
