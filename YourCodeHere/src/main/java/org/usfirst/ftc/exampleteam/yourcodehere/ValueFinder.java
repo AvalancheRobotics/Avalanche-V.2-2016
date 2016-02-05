@@ -15,6 +15,7 @@ public class ValueFinder extends SynchronousOpMode {
     Servo servoRightZip;
     Servo servoShelfLeft;
     Servo servoShelfRight;
+    Servo servoDispenserAngle;
     DcMotor motorSlide;
     DcMotor motorArm;
     DcMotor motorTape;
@@ -51,12 +52,14 @@ public class ValueFinder extends SynchronousOpMode {
         servoRightZip = hardwareMap.servo.get("servoRightZip");
         servoShelfLeft = hardwareMap.servo.get("servoShelfLeft");
         servoShelfRight = hardwareMap.servo.get("servoShelfRight");
+        servoDispenserAngle = hardwareMap.servo.get("servoDispenserAngle");
 
         servoLock.setPosition(servoLock.getPosition());
         servoLeftZip.setPosition(servoLeftZip.getPosition());
         servoRightZip.setPosition(servoRightZip.getPosition());
         servoShelfLeft.setPosition(servoShelfLeft.getPosition());
         servoShelfRight.setPosition(servoShelfRight.getPosition());
+        servoDispenserAngle.setPosition(servoDispenserAngle.getPosition());
 
         // MOTORS
         motorArm = hardwareMap.dcMotor.get("motorArm");
@@ -150,6 +153,12 @@ public class ValueFinder extends SynchronousOpMode {
                 servoName = null;
                 motorName = "motorTape";
                 currentMotor = motorTape;
+            }
+
+            if (toggle == 7) {
+                servoDispenserAngle.setPosition(servoDispenserAngle.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
+                currentServo = servoDispenserAngle;
+                servoName = "servoDispenserAngle";
             }
 
         }
