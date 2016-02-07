@@ -24,6 +24,9 @@ import org.swerverobotics.library.interfaces.TeleOp;
  */
 @TeleOp(name = "TeleOpNoPID")
 public class TeleOpNoPID extends SynchronousOpMode {
+    //RunForTime Class declaration
+    RunForTime timerHarvest;
+
 
     // Variables
 
@@ -31,6 +34,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
     //Used to tell where the servoSlide is (whether it's in a scoring position or neutral position
     SlidePosition slidePosition;
+
+    //Running loadDispenser Method
+    private boolean runningLoadDispenser = false;
 
     //shows what step score method is on
     private int scoreToggle = 0;
@@ -92,8 +98,12 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private static final double SHELF_DISPENSE_LEFT = 0; //ARBITRARY
     private static final double SHELF_DISPENSE_RIGHT = 0; //ARBITRARY
     private static final double DISPENSER_NEUTRAL = 0; //ARBITRARY
-    private static final double DISPENSER_LEFT = 0;
-    private static final double DISPENSER_RIGHT = 0;
+    private static final double DISPENSER_LEFT = 0; //ARBITRARY
+    private static final double DISPENSER_RIGHT = 0; //ARBITRARY
+    private static final double FLAP_UP_LEFT = 0; //ARBITRARY
+    private static final double FLAP_UP_RIGHT = 0; //ARBITRARY
+    private static final double FLAP_DOWN_LEFT = 0; //ARBITRARY
+    private static final double FLAP_DOWN_RIGHT = 0; //ARBITRARY
 
 
     // Declare drive motors
@@ -251,6 +261,18 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         //initializes to neutral because that's where the starting position is
         slidePosition = SlidePosition.NEUTRAL;
+
+        //initializes servos to their starting positions
+        servoDispenserAngle.setPosition(DISPENSER_NEUTRAL);
+        servoRightFlap.setPosition(FLAP_UP_RIGHT);
+        servoLeftFlap.setPosition(FLAP_UP_LEFT);
+        servoLeftZip.setPosition(LEFT_ZIP_UP);
+        servoRightZip.setPosition(RIGHT_ZIP_UP);
+        servoShelfLeft.setPosition(SHELF_STOW_LEFT);
+        servoShelfRight.setPosition(SHELF_STOW_RIGHT);
+        servoLock.setPosition(LOCK_ENGAGED);
+
+        timerHarvest = new RunForTime(motorHarvest);
     }
 
     @Override
@@ -277,6 +299,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
             //read sensors and adjust accordingly
             sensorChanges();
+
+            //Run For Time Methods (Checks and sees if time is up and if so stops motor
+            timerHarvest.update(System.currentTimeMillis());
 
             idle();
         }
@@ -565,8 +590,17 @@ public class TeleOpNoPID extends SynchronousOpMode {
         }
     }
 
-    private void loadDispenser() {
+    private void loadDispenserSet() {
+        runningLoadDispenser = true;
+        motorHarvest.setPower(0);
+        toggleShelf(false);
+        setArmPosition(ArmPosition.DISPENSE);
+    }
 
+    private void loadDispenserRun() {
+        timerHarvest.startRun(System.currentTimeMillis() + 300, 1); //ARBITRARY
+        if (motorHarvest.getPower() == 0)
+        setArmPosition(ArmPosition.MOUNTAIN);
     }
 
     //returns and updates are for testing purposes
@@ -667,19 +701,19 @@ public class TeleOpNoPID extends SynchronousOpMode {
     }
 
     private void setArmPosition(ArmPosition position) {
-        if (ArmPosition.initialize == position) {
+        if (ArmPosition.INITIALIZE == position) {
             motorArm.setTargetPosition(armInitPosition);
         }
 
-        if (ArmPosition.dispense == position) {
+        if (ArmPosition.DISPENSE == position) {
             motorArm.setTargetPosition(armDispensePosition);
         }
 
-        if (ArmPosition.harvest == position) {
+        if (ArmPosition.HARVEST == position) {
             motorArm.setTargetPosition(armHarvestPosition);
         }
 
-        if (ArmPosition.harvest == position) {
+        if (ArmPosition.MOUNTAIN == position) {
             motorArm.setTargetPosition(armMountainPosition);
         }
     }
@@ -691,17 +725,33 @@ public class TeleOpNoPID extends SynchronousOpMode {
      */
 
 
-    private void angleDispenser(SlidePosition position) {
-        if (SlidePosition.NEUTRAL == position) {
-            servoDispenserAngle.setPosition(DISPENSER_NEUTRAL);
+    private void toggleFlaps(boolean up) {
+        if (isBlue) {
+            if (true) {
+                servoLeftFlap.setPosition(FLAP_UP_LEFT);
+            }
+            else {
+                servoLeftFlap.setPosition(FLAP_DOWN_LEFT);
+            }
         }
-
-        if (SlidePosition.LEFT == position) {
-            servoDispenserAngle.setPosition(DISPENSER_LEFT);
+        else {
+            if (true) {
+                servoRightFlap.setPosition(FLAP_UP_RIGHT);
+            }
+            else {
+                servoRightFlap.setPosition(FLAP_DOWN_RIGHT);
+            }
         }
+    }
 
-        if (SlidePosition.RIGHT == position) {
-            servoDispenserAngle.setPosition(DISPENSER_RIGHT);
+    private void toggleShelf(boolean stow) {
+        if (stow) {
+            servoShelfRight.setPosition(SHELF_STOW_RIGHT);
+            servoShelfLeft.setPosition(SHELF_STOW_LEFT);
+        }
+        else {
+            servoShelfRight.setPosition(SHELF_DISPENSE_RIGHT);
+            servoShelfLeft.setPosition(SHELF_DISPENSE_RIGHT);
         }
     }
 

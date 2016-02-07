@@ -28,6 +28,4 @@ public class ContServoTest extends SynchronousOpMode {
             }
         }
     }
-
-
 }

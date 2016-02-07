@@ -4,8 +4,8 @@ package org.usfirst.ftc.exampleteam.yourcodehere;
  * Created by austinzhang on 2/4/16.
  */
 public enum ArmPosition {
-    initialize,
-    harvest,
-    dispense,
-    mountain
+    INITIALIZE,
+    HARVEST,
+    DISPENSE,
+    MOUNTAIN
 }
