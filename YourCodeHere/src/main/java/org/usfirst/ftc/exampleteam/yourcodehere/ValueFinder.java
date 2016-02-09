@@ -1,3 +1,23 @@
+/**
+ * HOW TO USE THIS METHOD
+ *
+ * Only uses gamepad1
+ *
+ * x - resets all motor encoders to zero (Do this if position somehow gets thrown off
+ * encoders are automatically reset to zero at initialization
+ *
+ * left stick y value - used to change servo positions and for running motors forwards and back
+ *
+ * Current value as well as the thing you're controlling
+ * should auto print on the driver phone in the telemetry section
+ *
+ * keep track of values in the value section (right after class declaration in beginning of code)
+ */
+
+
+
+
+
 package org.usfirst.ftc.exampleteam.yourcodehere;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,6 +29,41 @@ import org.swerverobotics.library.interfaces.TeleOp;
 
 @TeleOp(name = "Value Finder")
 public class ValueFinder extends SynchronousOpMode {
+
+    /** Keep Track Of Assigned Values Here**/
+
+    private static final int ARBITRARYVALUE = 0;
+
+    //Servo Values
+    private static final double RIGHT_ZIP_UP = ARBITRARYVALUE;
+    private static final double RIGHT_ZIP_DOWN = ARBITRARYVALUE;
+    private static final double LEFT_ZIP_UP = ARBITRARYVALUE;
+    private static final double LEFT_ZIP_DOWN = ARBITRARYVALUE;
+    private static final double LOCK_ENGAGED = ARBITRARYVALUE;
+    private static final double LOCK_DISENGAGED = ARBITRARYVALUE;
+    private static final double SHELF_STOW_LEFT = ARBITRARYVALUE;
+    private static final double SHELF_STOW_RIGHT = ARBITRARYVALUE;
+    private static final double SHELF_DISPENSE_LEFT = ARBITRARYVALUE;
+    private static final double SHELF_DISPENSE_RIGHT = ARBITRARYVALUE;
+    private static final double DISPENSER_NEUTRAL = ARBITRARYVALUE;
+    private static final double DISPENSER_LEFT = ARBITRARYVALUE;
+    private static final double DISPENSER_RIGHT = ARBITRARYVALUE;
+
+    //Motor Positions
+    private double slideBotPosition = ARBITRARYVALUE;
+    private double slideMidPosition = ARBITRARYVALUE;
+    private double slideTopPosition = ARBITRARYVALUE;
+    private int armInitPosition = ARBITRARYVALUE;
+    private int armHarvestPosition = ARBITRARYVALUE;
+    private int armDispensePosition = ARBITRARYVALUE;
+    private int armMountainPosition = ARBITRARYVALUE;
+    //farthest slide can extend without damage (soft stop)
+    private int maxSlideLength = ARBITRARYVALUE;
+    //length which tape extends to to hang
+    private int hangLength = ARBITRARYVALUE;
+
+
+
     //Declare Servos
     Servo servoLock;
     Servo servoLeftZip;
@@ -28,21 +83,6 @@ public class ValueFinder extends SynchronousOpMode {
     DcMotor currentMotor = motorArm;
 
     String motorName = "motorArm";
-
-    //constant values (servo positions)
-
-    private static final double ARBITRARYVALUE = 0.0;
-
-    private static final double ZIP_UP_LEFT = ARBITRARYVALUE;
-    private static final double ZIP_DOWN_LEFT = ARBITRARYVALUE;
-    private static final double ZIP_UP_RIGHT = ARBITRARYVALUE;
-    private static final double ZIP_DOWN_RIGHT = ARBITRARYVALUE;
-    private static final double LOCK_ENGAGED = ARBITRARYVALUE;
-    private static final double LOCK_DISENGAGED = ARBITRARYVALUE;
-    private static final double SHELF_STOW_LEFT = ARBITRARYVALUE;
-    private static final double SHELF_STOW_RIGHT = ARBITRARYVALUE;
-    private static final double SHELF_DISPENSE_LEFT = ARBITRARYVALUE;
-    private static final double SHELF_DISPENSE_RIGHT = ARBITRARYVALUE;
 
 
     private void hardwareMapping() throws InterruptedException {
@@ -65,13 +105,13 @@ public class ValueFinder extends SynchronousOpMode {
         motorArm = hardwareMap.dcMotor.get("motorArm");
         motorSlide = hardwareMap.dcMotor.get("motorSlide");
 
-        motorArm.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-        motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-        motorTape.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-
         motorArm.setMode(DcMotorController.RunMode.RESET_ENCODERS);
         motorSlide.setMode(DcMotorController.RunMode.RESET_ENCODERS);
         motorTape.setMode(DcMotorController.RunMode.RESET_ENCODERS);
+
+        motorArm.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        motorTape.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
     }
 
     @Override
@@ -91,6 +131,14 @@ public class ValueFinder extends SynchronousOpMode {
 
                 if (gamepad1.left_bumper) {
                     toggle--;
+                }
+
+                if (toggle > 6) {
+                    toggle = 0;
+                }
+
+                if (toggle < 0) {
+                    toggle = 6;
                 }
 
                 if (gamepad1.x) {
@@ -172,17 +220,9 @@ public class ValueFinder extends SynchronousOpMode {
             telemetry.addData(motorName, currentMotor.getCurrentPosition());
         }
 
-            telemetry.update();
-            idle();
-
-            if (toggle > 6) {
-                toggle = 0;
-            }
-
-            if (toggle < 0) {
-                toggle = 6;
-            }
-        }
+        telemetry.update();
+        idle();
+    }
 
 
     double scaleInput(double dVal) {
