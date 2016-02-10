@@ -21,6 +21,7 @@ import org.swerverobotics.library.interfaces.TeleOp;
  Y - Reset Encoders to Current Position (Wipes Distances)
  X - Degrees Traveled (WILL NOT BE ACCURATE IF YOU MOVE FORWARDS AFTER RESETTING THE ENCODERS) - sends data to phone
  B - Distance Traveled in Inches - sends data to phone
+ dpad_down - get correctedHeading
 
 MAKE SURE YOU WIPE THE DISTANCE (HIT Y) AFTER YOU GET DATA FROM EACH STEP OR READINGS WILL NOT BE ACCURATE
  */
