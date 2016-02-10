@@ -144,11 +144,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
     Servo servoRightZip;
 
     //Shelf servos
-    Servo servoShelfLeft;
-    Servo servoShelfRight;
+    Servo servoLeftRamp;
+    Servo servoRightRamp;
 
     //Servo for angling dispenser
-    Servo servoDispenserAngle;
+    Servo servoTilt;
 
     //Initialize and Map All Hardware
     private void hardwareMapping() throws InterruptedException {
@@ -181,11 +181,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
         servoRightZip = hardwareMap.servo.get("RightZip");
 
         // Initialize shelf servos
-        servoShelfLeft = hardwareMap.servo.get("ShelfLeft");
-        servoShelfRight = hardwareMap.servo.get("ShelfRight");
+        servoLeftRamp = hardwareMap.servo.get("LeftRamp");
+        servoRightRamp = hardwareMap.servo.get("RightRamp");
 
         // Initialize dispenser angle servo
-        servoDispenserAngle = hardwareMap.servo.get("DispenserAngle");
+        servoTilt = hardwareMap.servo.get("Tilt");
 
         // Reset encoders
         this.motorLeftAft.setMode(DcMotorController.RunMode.RESET_ENCODERS);
@@ -232,11 +232,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
 
         //initializes servos to their starting positions
-        servoDispenserAngle.setPosition(DISPENSER_NEUTRAL);
+        servoTilt.setPosition(DISPENSER_NEUTRAL);
         servoLeftZip.setPosition(LEFT_ZIP_UP);
         servoRightZip.setPosition(RIGHT_ZIP_UP);
-        servoShelfLeft.setPosition(SHELF_STOW_LEFT);
-        servoShelfRight.setPosition(SHELF_STOW_RIGHT);
+        servoLeftRamp.setPosition(SHELF_STOW_LEFT);
+        servoRightRamp.setPosition(SHELF_STOW_RIGHT);
         servoLock.setPosition(LOCK_ENGAGED);
     }
 
@@ -337,9 +337,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
         //manually adjust the tilt of dispenser
         if (gamepad2.right_trigger > .15 || gamepad2.left_trigger > .15) {
             if (gamepad2.right_trigger > .2) //.2 is a threshold so you don't accidentally press it
-                servoDispenserAngle.setPosition(gamepad2.right_trigger / 2 + .5);
+                servoTilt.setPosition(gamepad2.right_trigger / 2 + .5);
             else if (gamepad2.left_trigger > .2)
-                servoDispenserAngle.setPosition(-gamepad2.left_trigger / 2 + .5);
+                servoTilt.setPosition(-gamepad2.left_trigger / 2 + .5);
         }
 
         //adjust angle of tape
@@ -565,16 +565,16 @@ public class TeleOpNoPID extends SynchronousOpMode {
             if (scoreToggle == 1) {
                 //tilt dispenser
                 if (isBlue) {
-                    servoDispenserAngle.setPosition(DISPENSER_RIGHT);
+                    servoTilt.setPosition(DISPENSER_RIGHT);
                 } else {
-                    servoDispenserAngle.setPosition(DISPENSER_LEFT);
+                    servoTilt.setPosition(DISPENSER_LEFT);
                 }
                 scoreToggle++;
                 return;
             }
             if (scoreToggle == 2) {
                 //tilt dispenser back to neutral and return slides to starting position
-                servoDispenserAngle.setPosition(DISPENSER_NEUTRAL);
+                servoTilt.setPosition(DISPENSER_NEUTRAL);
                 motorSlide.setTargetPosition(startPosSlide);
                 scoreToggle = 0;
             }
@@ -684,11 +684,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
     private void toggleShelf(boolean stow) {
         if (stow) {
-            servoShelfRight.setPosition(SHELF_STOW_RIGHT);
-            servoShelfLeft.setPosition(SHELF_STOW_LEFT);
+            servoRightRamp.setPosition(SHELF_STOW_RIGHT);
+            servoLeftRamp.setPosition(SHELF_STOW_LEFT);
         } else {
-            servoShelfRight.setPosition(SHELF_DISPENSE_RIGHT);
-            servoShelfLeft.setPosition(SHELF_DISPENSE_LEFT);
+            servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
+            servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
         }
     }
 

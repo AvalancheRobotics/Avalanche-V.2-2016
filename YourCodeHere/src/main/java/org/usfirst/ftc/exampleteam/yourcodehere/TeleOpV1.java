@@ -359,8 +359,8 @@ public class TeleOpV1 extends SynchronousOpMode {
         servoRightZip = hardwareMap.servo.get("servoRightZip");
 
         // Initialize shelf servos
-        servoShelfLeft = hardwareMap.servo.get("servoShelfLeft");
-        servoShelfRight = hardwareMap.servo.get("servoShelfRight");
+        servoShelfLeft = hardwareMap.servo.get("servoLeftRamp");
+        servoShelfRight = hardwareMap.servo.get("servoRightRamp");
 
 
         // Initialize sensors

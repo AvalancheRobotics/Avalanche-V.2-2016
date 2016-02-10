@@ -68,9 +68,9 @@ public class ValueFinder extends SynchronousOpMode {
     Servo servoLock;
     Servo servoLeftZip;
     Servo servoRightZip;
-    Servo servoShelfLeft;
-    Servo servoShelfRight;
-    Servo servoDispenserAngle;
+    Servo servoLeftRamp;
+    Servo servoRightRamp;
+    Servo servoTilt;
     DcMotor motorSlide;
     DcMotor motorArm;
     DcMotor motorTape;
@@ -87,23 +87,23 @@ public class ValueFinder extends SynchronousOpMode {
 
     private void hardwareMapping() throws InterruptedException {
         // SERVOS
-        servoLock = hardwareMap.servo.get("servoLock");
-        servoLeftZip = hardwareMap.servo.get("servoLeftZip");
-        servoRightZip = hardwareMap.servo.get("servoRightZip");
-        servoShelfLeft = hardwareMap.servo.get("servoShelfLeft");
-        servoShelfRight = hardwareMap.servo.get("servoShelfRight");
-        servoDispenserAngle = hardwareMap.servo.get("servoDispenserAngle");
+        servoLock = hardwareMap.servo.get("Lock");
+        servoLeftZip = hardwareMap.servo.get("LeftZip");
+        servoRightZip = hardwareMap.servo.get("RightZip");
+        servoLeftRamp = hardwareMap.servo.get("LeftRamp");
+        servoRightRamp = hardwareMap.servo.get("RightRamp");
+        servoTilt = hardwareMap.servo.get("Tilt");
 
         servoLock.setPosition(servoLock.getPosition());
         servoLeftZip.setPosition(servoLeftZip.getPosition());
         servoRightZip.setPosition(servoRightZip.getPosition());
-        servoShelfLeft.setPosition(servoShelfLeft.getPosition());
-        servoShelfRight.setPosition(servoShelfRight.getPosition());
-        servoDispenserAngle.setPosition(servoDispenserAngle.getPosition());
+        servoLeftRamp.setPosition(servoLeftRamp.getPosition());
+        servoRightRamp.setPosition(servoRightRamp.getPosition());
+        servoTilt.setPosition(servoTilt.getPosition());
 
         // MOTORS
-        motorArm = hardwareMap.dcMotor.get("motorArm");
-        motorSlide = hardwareMap.dcMotor.get("motorSlide");
+        motorArm = hardwareMap.dcMotor.get("Arm");
+        motorSlide = hardwareMap.dcMotor.get("Slide");
 
         motorArm.setMode(DcMotorController.RunMode.RESET_ENCODERS);
         motorSlide.setMode(DcMotorController.RunMode.RESET_ENCODERS);
@@ -155,10 +155,10 @@ public class ValueFinder extends SynchronousOpMode {
             }
 
             if (toggle == 1) {
-                servoShelfRight.setPosition(servoShelfRight.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
-                servoShelfLeft.setPosition(servoShelfLeft.getPosition() - (scaleInput(gamepad1.left_stick_y) / 30));
-                currentServo = servoShelfRight;
-                servoName = "servoShelfRight";
+                servoRightRamp.setPosition(servoRightRamp.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
+                servoLeftRamp.setPosition(servoLeftRamp.getPosition() - (scaleInput(gamepad1.left_stick_y) / 30));
+                currentServo = servoRightRamp;
+                servoName = "servoRightRamp";
             }
 
             if (toggle == 2) {
@@ -204,17 +204,17 @@ public class ValueFinder extends SynchronousOpMode {
             }
 
             if (toggle == 7) {
-                servoDispenserAngle.setPosition(servoDispenserAngle.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
-                currentServo = servoDispenserAngle;
-                servoName = "servoDispenserAngle";
+                servoTilt.setPosition(servoTilt.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
+                currentServo = servoTilt;
+                servoName = "servoTilt";
             }
 
         }
 
         if (currentServo != null) {
             telemetry.addData(servoName, currentServo.getPosition());
-            if (servoName.equals("servoShelfRight"))
-                telemetry.addData("servoShelfLeft", servoShelfLeft.getPosition());
+            if (servoName.equals("servoRightRamp"))
+                telemetry.addData("servoLeftRamp", servoLeftRamp.getPosition());
         }
         else {
             telemetry.addData(motorName, currentMotor.getCurrentPosition());

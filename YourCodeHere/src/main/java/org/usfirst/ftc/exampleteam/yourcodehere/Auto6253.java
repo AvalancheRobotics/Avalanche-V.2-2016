@@ -87,31 +87,31 @@ public class Auto6253 extends SynchronousOpMode {
          */
 
             // Initialize drive motors
-            motorLeftFore = hardwareMap.dcMotor.get("motorLeftFore");
-            motorLeftAft = hardwareMap.dcMotor.get("motorLeftAft");
-            motorRightFore = hardwareMap.dcMotor.get("motorRightFore");
-            motorRightAft= hardwareMap.dcMotor.get("motorRightAft");
+            motorLeftFore = hardwareMap.dcMotor.get("LeftFore");
+            motorLeftAft = hardwareMap.dcMotor.get("LeftAft");
+            motorRightFore = hardwareMap.dcMotor.get("RightFore");
+            motorRightAft= hardwareMap.dcMotor.get("RightAft");
 
             motorRightFore.setDirection(DcMotor.Direction.REVERSE);
             motorRightAft.setDirection(DcMotor.Direction.REVERSE);
 
             // Initialize drawer slide motor and servos
-            motorSlide = hardwareMap.dcMotor.get("motorSlide");
-            servoTilt = hardwareMap.servo.get("servoTilt");
+            motorSlide = hardwareMap.dcMotor.get("Slide");
+            servoTilt = hardwareMap.servo.get("Tilt");
 
             // Initialize tape measure motor and servo
-            motorTape = hardwareMap.dcMotor.get("motorTape");
-            servoTape = hardwareMap.servo.get("servoTape");
+            motorTape = hardwareMap.dcMotor.get("Tape");
+            servoTape = hardwareMap.servo.get("Tape");
 
             // Initialize motor that spins the harvester
-            motorHarvest = hardwareMap.dcMotor.get("motorHarvest");
+            motorHarvest = hardwareMap.dcMotor.get("Harvest");
 
             // Initialize motor that raises and lowers the collection arm
-            motorArm = hardwareMap.dcMotor.get("motorArm");
+            motorArm = hardwareMap.dcMotor.get("Arm");
 
             // Initialize zipline flipping servos
-            servoLeftZip = hardwareMap.servo.get("servoLeftZip");
-            servoRightZip = hardwareMap.servo.get("servoRightZip");
+            servoLeftZip = hardwareMap.servo.get("LeftZip");
+            servoRightZip = hardwareMap.servo.get("RightZip");
 
             // Initialize sensors
             gyro = hardwareMap.gyroSensor.get("gyro");
