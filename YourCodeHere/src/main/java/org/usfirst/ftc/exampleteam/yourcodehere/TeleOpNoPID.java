@@ -18,6 +18,9 @@ import org.swerverobotics.library.interfaces.TeleOp;
  * UNLIKE NORMAL TELEOP, USES FTC'S BUILT IN MOVE_TO_POSITION which causes the motor to move more slowly but is also more accurate and easier to code than custom PID
  */
 
+//MAKE TRIGGERS LESS SENSITIVE
+
+
 
 /**
  * DO
@@ -76,7 +79,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private boolean atRestTriggers = true;
 
     //used when climbing up the mountain to spin wheels backwards so we don't get stuck
-    private final double CONSTANT_DRIVE_SPEED = -1;
+    private final double CONSTANT_DRIVE_SPEED = 1;
 
     //motor values (measured in ticks)
 
@@ -97,23 +100,21 @@ public class TeleOpNoPID extends SynchronousOpMode {
     //farthest slide can extend without damage
     private int maxSlideLength;
     //length which tape extends to to hang
-    private int hangLength;
-
 
     //Servo Values
-    private static final double RIGHT_ZIP_UP = 1; //ARBITRARY
-    private static final double RIGHT_ZIP_DOWN = 0; //ARBITRARY
-    private static final double LEFT_ZIP_UP = 1; //ARBITRARY
-    private static final double LEFT_ZIP_DOWN = 0; //ARBITRARY
-    private static final double LOCK_ENGAGED = 1; //ARBITRARY
-    private static final double LOCK_DISENGAGED = 0; //ARBITRARY
-    private static final double SHELF_STOW_LEFT = 0; //ARBITRARY
-    private static final double SHELF_STOW_RIGHT = 0; //ARBITRARY
-    private static final double SHELF_DISPENSE_LEFT = 0; //ARBITRARY
-    private static final double SHELF_DISPENSE_RIGHT = 0; //ARBITRARY
-    private static final double DISPENSER_NEUTRAL = 0; //ARBITRARY
-    private static final double DISPENSER_LEFT = 0; //ARBITRARY
-    private static final double DISPENSER_RIGHT = 0; //ARBITRARY
+    private static final double RIGHT_ZIP_UP = 0.753;
+    private static final double RIGHT_ZIP_DOWN = 0;
+    private static final double LEFT_ZIP_UP = 0.1677;
+    private static final double LEFT_ZIP_DOWN = 1;
+    private static final double LOCK_ENGAGED = 1;
+    private static final double LOCK_DISENGAGED = 0.3307;
+    private static final double SHELF_STOW_LEFT = 0.8166;
+    private static final double SHELF_STOW_RIGHT = 0.1833;
+    private static final double SHELF_DISPENSE_LEFT = 1;
+    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double DISPENSER_NEUTRAL = 0.5;
+    private static final double DISPENSER_LEFT = 0.6693;
+    private static final double DISPENSER_RIGHT = 0.3577;
 
     // Declare drive motors
     DcMotor motorLeftFore;
@@ -167,7 +168,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         // Initialize tape measure motor, servo tape, and servo lock.
         motorTape = hardwareMap.dcMotor.get("Tape");
-        servoTape = hardwareMap.servo.get("Tape");
+        servoTape = hardwareMap.servo.get("TapeAngle");
         servoLock = hardwareMap.servo.get("Lock");
 
         // Initialize motor that spins the harvester
@@ -206,6 +207,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
         motorArm.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
         motorHarvest.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 
+        motorSlide.setPower(1);
+        motorArm.setPower(.2);
+
         //keep track of the starting positions of arm, slide, and tape motors
         startPosArm = motorArm.getCurrentPosition();
         startPosSlide = motorSlide.getCurrentPosition();
@@ -214,30 +218,31 @@ public class TeleOpNoPID extends SynchronousOpMode {
         motorSlide.setTargetPosition(startPosSlide);
 
         //Score heights for slides
-        slideBotPosition = startPosTape + 3000; //ARBITRARY
-        slideMidPosition = startPosTape + 6000; //ARBITRARY
-        slideTopPosition = startPosTape + 9000; //ARBITRARY
-        maxSlideLength = startPosTape + 12000; //ARBITRARY
+        slideBotPosition = -2825;
+        slideMidPosition = -2188;
+        slideTopPosition = -7600; //ARBITRARY
+        //maxSlideLength = startPosTape + 12000; //ARBITRARY
 
         //Arm Positions
-        armInitPosition = startPosArm;
-        armDispensePosition = startPosArm + 3000; //ARBITRARY
-        armHarvestPosition = startPosArm + 3000; //ARBITRARY
-        armMountainPosition = startPosArm + 30; //ARBITRARY
+        armInitPosition = 0;
+        armDispensePosition = 222;
+        armHarvestPosition = 650;
+        armMountainPosition = 639;
 
         //keep track of max length tape should extend
-        maxTapeLength = motorTape.getCurrentPosition() + 6000; //ARBITRARY
+        //maxTapeLength = motorTape.getCurrentPosition() + 6000; //ARBITRARY
 
-        hangLength = motorTape.getCurrentPosition() + 5000; //ARBITRARY
+        //hangLength = motorTape.getCurrentPosition() + 5000; //ARBITRARY
 
 
         //initializes servos to their starting positions
         servoTilt.setPosition(DISPENSER_NEUTRAL);
         servoLeftZip.setPosition(LEFT_ZIP_UP);
         servoRightZip.setPosition(RIGHT_ZIP_UP);
-        servoLeftRamp.setPosition(SHELF_STOW_LEFT);
-        servoRightRamp.setPosition(SHELF_STOW_RIGHT);
+        servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
+        servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
         servoLock.setPosition(LOCK_ENGAGED);
+        servoTape.setPosition(.5);
     }
 
     @Override
@@ -311,7 +316,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
 
         //toggles zip line position
-        if (gamepad2.x && !gamepad2.back)
+        if (gamepad2.y)
             triggerZipline();
 
 
@@ -323,27 +328,37 @@ public class TeleOpNoPID extends SynchronousOpMode {
         //Stops any auto methods using slides and manually controls power with joysticks
         if (gamepad2.left_stick_y < -.2 || gamepad2.left_stick_y > .2) { //Threshold so you don't accidentally start running the slides manually
             motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
-            if (motorSlide.getCurrentPosition() > startPosSlide && motorSlide.getCurrentPosition() < maxSlideLength) {
-                motorSlide.setPower(scaleInput(gamepad2.left_stick_y));
-                //resets scoreToggle to 0
-                scoreToggle = 0;
-            } else {
-                motorSlide.setPower(0);
-            }
+            motorSlide.setPower(scaleInput(gamepad2.left_stick_y));
         } else if (motorSlide.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS))
             motorSlide.setPower(0);
 
 
         //manually adjust the tilt of dispenser
-        if (gamepad2.right_trigger > .15 || gamepad2.left_trigger > .15) {
-            if (gamepad2.right_trigger > .2) //.2 is a threshold so you don't accidentally press it
-                servoTilt.setPosition(gamepad2.right_trigger / 2 + .5);
-            else if (gamepad2.left_trigger > .2)
-                servoTilt.setPosition(-gamepad2.left_trigger / 2 + .5);
+        if (gamepad2.right_trigger > .1 || gamepad2.left_trigger > .1) {
+            if (gamepad2.right_trigger > gamepad2.left_trigger) {
+                servoTilt.setPosition(Math.min(gamepad2.right_trigger / 25 + servoTilt.getPosition(), 1));
+            }
+            else {
+                servoTilt.setPosition(Math.max(-gamepad2.left_trigger / 25 + servoTilt.getPosition(), 1));
+            }
         }
 
         //adjust angle of tape
-        servoTape.setPosition(scaleInput(gamepad2.right_stick_y / 2 + .5));
+        servoTape.setPosition(scaleInput(gamepad2.right_stick_y / 2) + .5);
+
+        //auto positions for tilt
+
+        if (gamepad2.x && !gamepad2.back) {
+            servoTilt.setPosition(DISPENSER_LEFT);
+        }
+
+        if (gamepad2.b) {
+            servoTilt.setPosition(DISPENSER_RIGHT);
+        }
+
+        if (gamepad2.a) {
+            servoTilt.setPosition(DISPENSER_NEUTRAL);
+        }
 
     }
 
@@ -364,9 +379,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
             loadDispenserSet();
         }
 
-        score(Height.BOT, gamepad2.a);
-        score(Height.MID, gamepad2.b && !gamepad2.back);
-        score(Height.TOP, gamepad2.y);
+        //score(Height.BOT, gamepad2.a);
+        //score(Height.MID, gamepad2.b && !gamepad2.back);
+        //score(Height.TOP, gamepad2.y);
 
         startHarvest(gamepad2.right_bumper);
 
@@ -426,11 +441,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
             if (up) {
                 motorTape.setPower(1);
             } else {
-                if (motorTape.getCurrentPosition() > startPosTape + 40 || (!gamepad1.back && gamepad1.b)) {
+                if (motorTape.getCurrentPosition() > startPosTape + 40) {
                     motorTape.setPower(-1);
-                    if (gamepad1.b) {
-                        startPosTape = motorTape.getCurrentPosition();
-                    }
                 } else
                     motorTape.setPower(0);
             }
@@ -590,18 +602,20 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
     private void loadDispenserRun() { //Run this constantly in a loop
         if (runningLoadDispenser) {
-            if (motorArm.getCurrentPosition() >= motorArm.getTargetPosition() - 20 && !loadStep1Complete) {
+            if ((motorArm.getCurrentPosition() >= motorArm.getTargetPosition() - 20 && motorArm.getCurrentPosition() <= motorArm.getTargetPosition() + 20) && !loadStep1Complete) {
                 loadStep1Complete = true;
                 loadStep2StartTime = System.currentTimeMillis();
             }
-            if (loadStep1Complete && System.currentTimeMillis() - loadStep2StartTime < 500) //500 value can be adjusted ARBITRARY
-                motorHarvest.setPower(1.0); //ARBITRARY - need to test for best speed for spinning out blocks
-            else {
-                motorHarvest.setPower(0.0);
-                setArmPosition(ArmPosition.MOUNTAIN);
-                toggleShelf(true);
-                loadStep1Complete = false;
-                runningLoadDispenser = false;
+            if (loadStep1Complete) {
+                if (System.currentTimeMillis() - loadStep2StartTime < 500) //500 value can be adjusted ARBITRARY
+                    motorHarvest.setPower(1.0); //ARBITRARY - need to test for best speed for spinning out blocks
+                else {
+                    motorHarvest.setPower(0.0);
+                    setArmPosition(ArmPosition.MOUNTAIN);
+                    toggleShelf(true);
+                    loadStep1Complete = false;
+                    runningLoadDispenser = false;
+                }
             }
         }
     }
@@ -610,6 +624,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     //returns and updates are for testing purposes
     private void extendSlide(Height height) { //Can be either top mid or bot
         motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+        motorSlide.setPower(1);
         if (height == Height.TOP) {
             motorSlide.setTargetPosition((int) (slideTopPosition));
             return;

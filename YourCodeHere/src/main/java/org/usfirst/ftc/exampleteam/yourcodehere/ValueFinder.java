@@ -35,32 +35,32 @@ public class ValueFinder extends SynchronousOpMode {
     private static final int ARBITRARYVALUE = 0;
 
     //Servo Values
-    private static final double RIGHT_ZIP_UP = ARBITRARYVALUE;
-    private static final double RIGHT_ZIP_DOWN = ARBITRARYVALUE;
-    private static final double LEFT_ZIP_UP = ARBITRARYVALUE;
-    private static final double LEFT_ZIP_DOWN = ARBITRARYVALUE;
-    private static final double LOCK_ENGAGED = ARBITRARYVALUE;
-    private static final double LOCK_DISENGAGED = ARBITRARYVALUE;
-    private static final double SHELF_STOW_LEFT = ARBITRARYVALUE;
-    private static final double SHELF_STOW_RIGHT = ARBITRARYVALUE;
-    private static final double SHELF_DISPENSE_LEFT = ARBITRARYVALUE;
-    private static final double SHELF_DISPENSE_RIGHT = ARBITRARYVALUE;
-    private static final double DISPENSER_NEUTRAL = ARBITRARYVALUE;
-    private static final double DISPENSER_LEFT = ARBITRARYVALUE;
-    private static final double DISPENSER_RIGHT = ARBITRARYVALUE;
+    private static final double RIGHT_ZIP_UP = 0.753;
+    private static final double RIGHT_ZIP_DOWN = 0;
+    private static final double LEFT_ZIP_UP = 0.1677;
+    private static final double LEFT_ZIP_DOWN = 1;
+    private static final double LOCK_ENGAGED = 1;
+    private static final double LOCK_DISENGAGED = 0.3307;
+    private static final double SHELF_STOW_LEFT = 0.8166;
+    private static final double SHELF_STOW_RIGHT = 0.1833;
+    private static final double SHELF_DISPENSE_LEFT = 1;
+    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double DISPENSER_NEUTRAL = 0.5;
+    private static final double DISPENSER_LEFT = 0.6693;
+    private static final double DISPENSER_RIGHT = 0.3577;
 
     //Motor Positions
-    private double slideBotPosition = ARBITRARYVALUE;
-    private double slideMidPosition = ARBITRARYVALUE;
-    private double slideTopPosition = ARBITRARYVALUE;
-    private int armInitPosition = ARBITRARYVALUE;
-    private int armHarvestPosition = ARBITRARYVALUE;
-    private int armDispensePosition = ARBITRARYVALUE;
-    private int armMountainPosition = ARBITRARYVALUE;
+    private double slideBotPosition = -2825;
+    private double slideMidPosition = -2188;
+    private double slideTopPosition = -7600;
+    private int armInitPosition = 0;
+    private int armHarvestPosition = 706;
+    private int armDispensePosition = 222;
+    private int armMountainPosition = 639;
     //farthest slide can extend without damage (soft stop)
-    private int maxSlideLength = ARBITRARYVALUE;
+    //private int maxSlideLength = ARBITRARYVALUE;
     //length which tape extends to to hang
-    private int hangLength = ARBITRARYVALUE;
+    //private int hangLength = ARBITRARYVALUE;
 
 
 
@@ -74,6 +74,7 @@ public class ValueFinder extends SynchronousOpMode {
     DcMotor motorSlide;
     DcMotor motorArm;
     DcMotor motorTape;
+    Servo servoTapeAngle;
 
     int toggle = 0;
     Servo currentServo = servoLock;
@@ -94,16 +95,18 @@ public class ValueFinder extends SynchronousOpMode {
         servoRightRamp = hardwareMap.servo.get("RightRamp");
         servoTilt = hardwareMap.servo.get("Tilt");
 
-        servoLock.setPosition(servoLock.getPosition());
-        servoLeftZip.setPosition(servoLeftZip.getPosition());
-        servoRightZip.setPosition(servoRightZip.getPosition());
-        servoLeftRamp.setPosition(servoLeftRamp.getPosition());
-        servoRightRamp.setPosition(servoRightRamp.getPosition());
-        servoTilt.setPosition(servoTilt.getPosition());
+        servoLock.setPosition(LOCK_DISENGAGED);
+        servoLeftZip.setPosition(LEFT_ZIP_UP);
+        servoRightZip.setPosition(RIGHT_ZIP_UP);
+        servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
+        servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
+        servoTilt.setPosition(DISPENSER_NEUTRAL);
+
 
         // MOTORS
         motorArm = hardwareMap.dcMotor.get("Arm");
         motorSlide = hardwareMap.dcMotor.get("Slide");
+        motorTape = hardwareMap.dcMotor.get("Tape");
 
         motorArm.setMode(DcMotorController.RunMode.RESET_ENCODERS);
         motorSlide.setMode(DcMotorController.RunMode.RESET_ENCODERS);
@@ -133,21 +136,25 @@ public class ValueFinder extends SynchronousOpMode {
                     toggle--;
                 }
 
-                if (toggle > 6) {
+                if (toggle > 7) {
                     toggle = 0;
                 }
 
                 if (toggle < 0) {
-                    toggle = 6;
+                    toggle = 7;
                 }
 
                 if (gamepad1.x) {
                     motorArm.setMode(DcMotorController.RunMode.RESET_ENCODERS);
                     motorSlide.setMode(DcMotorController.RunMode.RESET_ENCODERS);
                     motorTape.setMode(DcMotorController.RunMode.RESET_ENCODERS);
+                    motorArm.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+                    motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+                    motorTape.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 }
 
             }
+
             if (toggle == 0) {
                 servoLock.setPosition(servoLock.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
                 currentServo = servoLock;
@@ -179,8 +186,7 @@ public class ValueFinder extends SynchronousOpMode {
                 servoName = null;
                 motorName = "motorArm";
                 currentMotor = motorArm;
-            }
-            else {
+            } else {
                 motorArm.setPower(0);
             }
 
@@ -190,8 +196,7 @@ public class ValueFinder extends SynchronousOpMode {
                 servoName = null;
                 motorName = "motorSlide";
                 currentMotor = motorSlide;
-            }
-            else {
+            } else {
                 motorSlide.setPower(0);
             }
 
@@ -209,19 +214,18 @@ public class ValueFinder extends SynchronousOpMode {
                 servoName = "servoTilt";
             }
 
-        }
+            if (currentServo != null) {
+                telemetry.addData(servoName, currentServo.getPosition());
+                if (servoName.equals("servoRightRamp"))
+                    telemetry.addData("servoLeftRamp", servoLeftRamp.getPosition());
+            } else {
+                telemetry.addData(motorName, currentMotor.getCurrentPosition());
+            }
 
-        if (currentServo != null) {
-            telemetry.addData(servoName, currentServo.getPosition());
-            if (servoName.equals("servoRightRamp"))
-                telemetry.addData("servoLeftRamp", servoLeftRamp.getPosition());
-        }
-        else {
-            telemetry.addData(motorName, currentMotor.getCurrentPosition());
-        }
 
-        telemetry.update();
-        idle();
+            telemetry.update();
+            idle();
+        }
     }
 
 

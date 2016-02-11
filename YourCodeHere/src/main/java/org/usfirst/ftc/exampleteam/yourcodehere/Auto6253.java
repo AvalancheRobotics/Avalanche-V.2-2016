@@ -178,9 +178,8 @@ public class Auto6253 extends SynchronousOpMode {
         }
 
         public void  v2Auto(boolean blue) throws InterruptedException{
-            // Tudo, get TICKS_PER_DEGREE_ARM 16/24 for torque
+            // Tudo
             //       extendSlides() and retractSlides()
-            //       releaseClimbers(left)
             lowerArm();
             motorHarvest.setPower(-1);
             Thread.sleep(2000);
@@ -486,13 +485,13 @@ public class Auto6253 extends SynchronousOpMode {
         }
         public void releaseClimbers(boolean left) throws InterruptedException{
             if(left){
-                servoTilt.setPosition(.25);
+                servoTilt.setPosition(0.217);
                 Thread.sleep(2000);
-                servoTilt.setPosition(0);
+                servoTilt.setPosition(0.5);
             } else{
-                servoTilt.setPosition(-.25);
+                servoTilt.setPosition(0.717);
                 Thread.sleep(2000);
-                servoTilt.setPosition(0);
+                servoTilt.setPosition(0.5);
             }
         }
         public void setAllDrivePower(double power){
