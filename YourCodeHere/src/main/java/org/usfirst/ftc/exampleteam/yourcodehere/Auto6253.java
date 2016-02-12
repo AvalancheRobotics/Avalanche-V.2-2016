@@ -48,6 +48,24 @@ public class Auto6253 extends SynchronousOpMode {
     public static int drift;
     public static double startTime;
 
+
+    //Servo Values
+    private static final double RIGHT_ZIP_UP = 0.753;
+    private static final double RIGHT_ZIP_DOWN = 0;
+    private static final double LEFT_ZIP_UP = 0.1677;
+    private static final double LEFT_ZIP_DOWN = 1;
+    private static final double LOCK_ENGAGED = 0.83;
+    private static final double LOCK_DISENGAGED = .5;
+    private static final double SHELF_STOW_LEFT = 0.8166;
+    private static final double SHELF_STOW_RIGHT = 0.1833;
+    private static final double SHELF_DISPENSE_LEFT = 1;
+    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double DISPENSER_NEUTRAL = 0.5;
+    private static final double DISPENSER_LEFT = 0.6693;
+    private static final double DISPENSER_RIGHT = 0.3577;
+
+
+
     // Declare drive motors
         DcMotor motorLeftFore;
         DcMotor motorLeftAft;
@@ -78,7 +96,7 @@ public class Auto6253 extends SynchronousOpMode {
         Servo servoRightZip;
 
     // Declare sensors
-        GyroSensor gyro;
+      //  GyroSensor gyro;
 
     @Override public void main() throws InterruptedException {
         /* Initialize our hardware variables. Note that the strings used here as parameters
@@ -98,10 +116,11 @@ public class Auto6253 extends SynchronousOpMode {
             // Initialize drawer slide motor and servos
             motorSlide = hardwareMap.dcMotor.get("Slide");
             servoTilt = hardwareMap.servo.get("Tilt");
+            servoTilt.setPosition(0.5);
 
             // Initialize tape measure motor and servo
             motorTape = hardwareMap.dcMotor.get("Tape");
-            servoTape = hardwareMap.servo.get("Tape");
+            servoTape = hardwareMap.servo.get("TapeAngle");
 
             // Initialize motor that spins the harvester
             motorHarvest = hardwareMap.dcMotor.get("Harvest");
@@ -113,8 +132,9 @@ public class Auto6253 extends SynchronousOpMode {
             servoLeftZip = hardwareMap.servo.get("LeftZip");
             servoRightZip = hardwareMap.servo.get("RightZip");
 
+
             // Initialize sensors
-            gyro = hardwareMap.gyroSensor.get("gyro");
+            /*gyro = hardwareMap.gyroSensor.get("gyro");
 
 
             /////////////////////////////////////
@@ -126,19 +146,20 @@ public class Auto6253 extends SynchronousOpMode {
             Thread.sleep(5000);                //
             drift = gyro.getHeading();         //
             /////////////////////////////////////
+            */
 
 
             waitForStart();
 
         ////////////////////////////Op mode started/////////////////////////////////////////////////
 
-            offset = gyro.getHeading();
+            //offset = gyro.getHeading();
             startTime = System.nanoTime();
 
             motorArm.setMode(DcMotorController.RunMode.RESET_ENCODERS);
 
             boolean blue = true;
-            v2Auto(blue);
+            v2AutoSquare(blue);
 
         }
 
@@ -178,43 +199,55 @@ public class Auto6253 extends SynchronousOpMode {
         }
 
         public void  v2Auto(boolean blue) throws InterruptedException{
-            // Tudo
-            //       extendSlides() and retractSlides()
-            lowerArm();
+            // lowerArm();
             motorHarvest.setPower(-1);
             Thread.sleep(2000);
-            moveForwardOnHeading(12);
+            moveForward(0.5, 84);
             if (blue)
-                heading(45);
+                pivot(0.3, 40);
             else
-                heading(-45);
-            moveForwardOnHeading(48);
+                pivot(0.3, -40);
+            moveForward(0.5, 6);
             if(blue)
-                heading(-135);
+                pivot(0.5, -180);
             else
-                heading(135);
-            moveForwardOnHeading(-24);
+                pivot(0.5, 181);
+            moveForward(0.5, -8);
             scoreClimbers(true);
-            moveForwardOnHeading(6);
-            if(blue)
-                heading(-90);
-            else
-                heading(90);
-            moveForwardOnHeading(24);
-            if(blue)
-                heading(45);
-            else
-                heading(-45);
-            moveForwardOnHeading(24);
-            moveForwardOnHeading(-6);
-            if (blue)
-                heading(90);
-            else
-                heading(-90);
-            motorHarvest.setPower(0);
-            raiseArm();
-            moveForwardOnHeading(-24);
         }
+        public void  v2AutoSquare(boolean blue) throws InterruptedException{
+            // lowerArm();
+            //motorHarvest.setPower(-1);
+             Thread.sleep(2000);
+             moveForward(0.5, 11);
+            if (blue)
+                pivot(0.3, 52);
+            else
+                pivot(0.3, -52);
+             moveForward(0.5, 77);
+            if(blue)
+                 pivot(0.5, 40);
+            else
+                 pivot(0.5, -40);
+            moveForward(0.5, 10);
+            moveForward(0.5, -10);
+            if(blue)
+                pivot(0.5, 176);
+            else
+                pivot(0.5, -176);
+            moveForward(0.5, -15);
+            scoreClimbers(true);
+            if(blue)
+                pivot(0.5, -45);
+            else
+                pivot(0.5, 45);
+            moveForward(0.5, 25);
+            if(blue)
+                pivot(0.5, 84);
+            else
+                pivot(0.5, -84);
+            moveForward(0.5, -13);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                            //
@@ -223,11 +256,11 @@ public class Auto6253 extends SynchronousOpMode {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
         public void raiseArm() throws InterruptedException{
-            setArmHeight(.5, 45);
+            setArmHeight(.15, -2700);
         }
 
         public void lowerArm() throws InterruptedException{
-            setArmHeight(.5, -90);
+            setArmHeight(.15, 2700);
         }
 
         public void scoreClimbers(boolean left) throws InterruptedException{
@@ -391,8 +424,8 @@ public class Auto6253 extends SynchronousOpMode {
 
             double topCeiling = 1;
             double bottomCeiling = -1;
-            double topFloor = .12;
-            double bottomFloor = -.12;
+            double topFloor = .2;
+            double bottomFloor = -.2;
 
             int target = getCorrectedHeading() + deg;
             while(target > 359)
@@ -432,7 +465,7 @@ public class Auto6253 extends SynchronousOpMode {
         public int getCorrectedHeading(){
             double elapsedSeconds = (System.nanoTime() - startTime) / 1000000000.0;
             int totalDrift = (int)(elapsedSeconds / 5 * drift);
-            int targetHeading = gyro.getHeading() - offset - totalDrift;
+            int targetHeading = 0; //ARBITRARY VALUE //gyro.getHeading() - offset - totalDrift;
             while(targetHeading > 359)               //
                 targetHeading = targetHeading - 360; // Allows value to "wrap around"
             while(targetHeading < 0)                 // since values can only be 0-359
@@ -456,8 +489,8 @@ public class Auto6253 extends SynchronousOpMode {
         }
 
         public void extendSlides() throws InterruptedException{
-            int distance = 120;
-            double power = .5;
+            int distance = -4740;
+            double power = 1;
 
             motorSlide.setTargetPosition(motorSlide.getCurrentPosition() + distance);
 
@@ -470,8 +503,8 @@ public class Auto6253 extends SynchronousOpMode {
             motorSlide.setPower(0);
         }
         public void retractSlides() throws InterruptedException{
-            int distance = -120;
-            double power = .5;
+            int distance = 4740;
+            double power = 1;
 
             motorSlide.setTargetPosition(motorSlide.getCurrentPosition() + distance);
 
@@ -485,13 +518,19 @@ public class Auto6253 extends SynchronousOpMode {
         }
         public void releaseClimbers(boolean left) throws InterruptedException{
             if(left){
-                servoTilt.setPosition(0.217);
-                Thread.sleep(2000);
+                servoTilt.setPosition(.3);
+                Thread.sleep(400);
+                servoTilt.setPosition(0.65);
+                Thread.sleep(3000);
                 servoTilt.setPosition(0.5);
+                Thread.sleep(2000);
             } else{
-                servoTilt.setPosition(0.717);
-                Thread.sleep(2000);
+                servoTilt.setPosition(.7);
+                Thread.sleep(400);
+                servoTilt.setPosition(0.35);
+                Thread.sleep(3000);
                 servoTilt.setPosition(0.5);
+                Thread.sleep(2000);
             }
         }
         public void setAllDrivePower(double power){

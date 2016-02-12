@@ -3,6 +3,7 @@ package org.usfirst.ftc.exampleteam.yourcodehere;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 import com.qualcomm.robotcore.hardware.GyroSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
@@ -29,38 +30,67 @@ MAKE SURE YOU WIPE THE DISTANCE (HIT Y) AFTER YOU GET DATA FROM EACH STEP OR REA
 
 @TeleOp(name = "AutoMakeInches")
 public class AutoMakerInches extends SynchronousOpMode {
-    // Declare drive motors
+    //Servo Values
+    private static final double RIGHT_ZIP_UP = 0.753;
+    private static final double LEFT_ZIP_UP = 0.1677;
+
+    private static final double LOCK_DISENGAGED = .5;
+
+    private static final double SHELF_DISPENSE_LEFT = 1;
+    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double DISPENSER_NEUTRAL = 0.5;
+
+    private double TICKS_PER_INCH = 133.7;
+    private double TICKS_PER_DEGREE_DRIVE = (51.84*TICKS_PER_INCH)/360;
+
+
+    private int initLeftFore = 0;
+    private int initLeftAft = 0;
+    private int initRightFore = 0;
+    private int initRightAft = 0;
+
+
+
+    //Declare Servos
+    Servo servoLock;
+    Servo servoLeftZip;
+    Servo servoRightZip;
+    Servo servoLeftRamp;
+    Servo servoRightRamp;
+    Servo servoTilt;
+    Servo servoTapeAngle;
     DcMotor motorLeftFore;
-    DcMotor motorLeftAft;
     DcMotor motorRightFore;
+    DcMotor motorLeftAft;
     DcMotor motorRightAft;
+    DcMotor motorSlide;
 
-    GyroSensor gyro;
-
-
-    //Declare initial positions of those drive encoders
-    private int initLeftFore;
-    private int initLeftAft;
-    private int initRightFore;
-    private int initRightAft;
-
-    //Declare constants
-    public static final double TICKS_PER_INCH = 133.7;
-    public static final double TICKS_PER_DEGREE_DRIVE = (51.84*TICKS_PER_INCH)/360;
-
-    public static int offset;
-    public static int drift;
-    public static double startTime;
 
 
     //Initialize and Map All Hardware
     private void hardwareMapping() throws InterruptedException {
-        // Initialize drive motors
-        motorLeftFore = hardwareMap.dcMotor.get("lf");
-        motorLeftAft = hardwareMap.dcMotor.get("lb");
-        motorRightFore = hardwareMap.dcMotor.get("rf");
-        motorRightAft = hardwareMap.dcMotor.get("rb");
-        gyro = hardwareMap.gyroSensor.get("gyro");
+        servoLock = hardwareMap.servo.get("Lock");
+        servoLeftZip = hardwareMap.servo.get("LeftZip");
+        servoRightZip = hardwareMap.servo.get("RightZip");
+        servoLeftRamp = hardwareMap.servo.get("LeftRamp");
+        servoRightRamp = hardwareMap.servo.get("RightRamp");
+        servoTilt = hardwareMap.servo.get("Tilt");
+        servoTapeAngle = hardwareMap.servo.get("TapeAngle");
+        motorLeftAft = hardwareMap.dcMotor.get("LeftAft");
+        motorLeftFore = hardwareMap.dcMotor.get("LeftFore");
+        motorRightAft = hardwareMap.dcMotor.get("RightAft");
+        motorRightFore = hardwareMap.dcMotor.get("RightFore");
+        motorSlide = hardwareMap.dcMotor.get("Slide");
+
+
+        servoTapeAngle.setPosition(.5);
+        servoLock.setPosition(LOCK_DISENGAGED);
+        servoLeftZip.setPosition(LEFT_ZIP_UP);
+        servoRightZip.setPosition(RIGHT_ZIP_UP);
+        servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
+        servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
+        servoTilt.setPosition(DISPENSER_NEUTRAL);
+
 
         //Left and right motors are on opposite sides and must spin opposite directions to go forward
         motorLeftAft.setDirection(DcMotor.Direction.REVERSE);
@@ -86,22 +116,7 @@ public class AutoMakerInches extends SynchronousOpMode {
     public void main() throws InterruptedException {
         hardwareMapping();
 
-        /////////////////////////////////////
-        gyro.calibrate();                  //
-        //
-        while (gyro.isCalibrating())       // Calibrating Gyro
-            Thread.sleep(50);              //
-        //
-        Thread.sleep(5000);                //
-        drift = gyro.getHeading();         //
-        /////////////////////////////////////
-
         waitForStart();
-
-        ////////////////////////////Op mode started/////////////////////////////////////////////////
-
-        offset = gyro.getHeading();
-        startTime = System.nanoTime();
 
         // Go go gadget robot!
         while (opModeIsActive()) {
@@ -140,10 +155,6 @@ public class AutoMakerInches extends SynchronousOpMode {
 
             if (gamepad1.x) {
                 printDegreesTravelFromInitPos();
-            }
-
-            if (gamepad1.dpad_down) {
-                getCorrectedHeading();
             }
 
             idle();
@@ -201,18 +212,6 @@ public class AutoMakerInches extends SynchronousOpMode {
         double degrees = (Math.abs((motorLeftAft.getCurrentPosition() - initLeftAft) / TICKS_PER_DEGREE_DRIVE) + Math.abs((motorRightAft.getCurrentPosition() - initRightAft) / TICKS_PER_DEGREE_DRIVE)) / 2;
         telemetry.addData("degrees rotated (always positive)", degrees);
         telemetry.update();
-    }
-
-
-    public int getCorrectedHeading(){
-        double elapsedSeconds = (System.nanoTime() - startTime) / 1000000000.0;
-        int totalDrift = (int)(elapsedSeconds / 5 * drift);
-        int targetHeading = gyro.getHeading() - offset - totalDrift;
-        while(targetHeading > 359)               //
-            targetHeading = targetHeading - 360; // Allows value to "wrap around"
-        while(targetHeading < 0)                 // since values can only be 0-359
-            targetHeading = targetHeading + 360; //
-        return targetHeading;
     }
 
 }

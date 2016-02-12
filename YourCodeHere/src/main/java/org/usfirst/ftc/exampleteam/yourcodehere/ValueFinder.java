@@ -28,7 +28,7 @@ import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
 
 @TeleOp(name = "Value Finder")
-public class ValueFinder extends SynchronousOpMode {
+public class ValueFinder extends SynchronousOpMode{
 
     /** Keep Track Of Assigned Values Here**/
 
@@ -39,8 +39,8 @@ public class ValueFinder extends SynchronousOpMode {
     private static final double RIGHT_ZIP_DOWN = 0;
     private static final double LEFT_ZIP_UP = 0.1677;
     private static final double LEFT_ZIP_DOWN = 1;
-    private static final double LOCK_ENGAGED = 1;
-    private static final double LOCK_DISENGAGED = 0.3307;
+    private static final double LOCK_ENGAGED = 0;
+    private static final double LOCK_DISENGAGED = .5;
     private static final double SHELF_STOW_LEFT = 0.8166;
     private static final double SHELF_STOW_RIGHT = 0.1833;
     private static final double SHELF_DISPENSE_LEFT = 1;
@@ -53,10 +53,10 @@ public class ValueFinder extends SynchronousOpMode {
     private double slideBotPosition = -2825;
     private double slideMidPosition = -2188;
     private double slideTopPosition = -7600;
-    private int armInitPosition = 0;
-    private int armHarvestPosition = 706;
-    private int armDispensePosition = 222;
-    private int armMountainPosition = 639;
+    private int armInitPosition = -2330;
+    private int armHarvestPosition = 0;
+    private int armDispensePosition = -1535;
+    private int armMountainPosition = -238;
     //farthest slide can extend without damage (soft stop)
     //private int maxSlideLength = ARBITRARYVALUE;
     //length which tape extends to to hang
@@ -94,7 +94,9 @@ public class ValueFinder extends SynchronousOpMode {
         servoLeftRamp = hardwareMap.servo.get("LeftRamp");
         servoRightRamp = hardwareMap.servo.get("RightRamp");
         servoTilt = hardwareMap.servo.get("Tilt");
+        servoTapeAngle = hardwareMap.servo.get("TapeAngle");
 
+        servoTapeAngle.setPosition(.5);
         servoLock.setPosition(LOCK_DISENGAGED);
         servoLeftZip.setPosition(LEFT_ZIP_UP);
         servoRightZip.setPosition(RIGHT_ZIP_UP);
