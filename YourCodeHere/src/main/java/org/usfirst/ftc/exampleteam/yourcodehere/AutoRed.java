@@ -40,8 +40,8 @@ import org.swerverobotics.library.interfaces.*;
  * setRightDrivePower(double power)
  */
 
-@Autonomous(name = "AutoBlue")
-public class Auto6253 extends SynchronousOpMode {
+@Autonomous(name = "AutoRed")
+public class AutoRed extends SynchronousOpMode {
     public static final double TICKS_PER_INCH = 133.7;
     public static final double TICKS_PER_DEGREE_DRIVE = (51.84 * TICKS_PER_INCH) / 360;
     public static final double TICKS_PER_DEGREE_ARM = ((24 / 16) * 1120) / 360;
@@ -164,7 +164,7 @@ public class Auto6253 extends SynchronousOpMode {
         startTime = System.nanoTime();
 
 
-        boolean blue = true;
+        boolean blue = false;
         v2AutoSquare(blue);
 
     }

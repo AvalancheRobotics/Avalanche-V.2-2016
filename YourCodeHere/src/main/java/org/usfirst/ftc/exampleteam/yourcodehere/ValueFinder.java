@@ -138,12 +138,12 @@ public class ValueFinder extends SynchronousOpMode{
                     toggle--;
                 }
 
-                if (toggle > 7) {
+                if (toggle > 8) {
                     toggle = 0;
                 }
 
                 if (toggle < 0) {
-                    toggle = 7;
+                    toggle = 8;
                 }
 
                 if (gamepad1.x) {
@@ -214,6 +214,12 @@ public class ValueFinder extends SynchronousOpMode{
                 servoTilt.setPosition(servoTilt.getPosition() + (scaleInput(gamepad1.left_stick_y) / 30));
                 currentServo = servoTilt;
                 servoName = "servoTilt";
+            }
+
+            if (toggle == 8) {
+                servoTapeAngle.setPosition(.5 + (scaleInput(gamepad1.left_stick_y)));
+                currentServo = servoTapeAngle;
+                servoName = "servoTapeAngle";
             }
 
             if (currentServo != null) {

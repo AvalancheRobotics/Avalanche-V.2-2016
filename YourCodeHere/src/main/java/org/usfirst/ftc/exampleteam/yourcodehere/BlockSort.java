@@ -45,8 +45,8 @@ import org.swerverobotics.library.interfaces.TeleOp;
  * HAPPEN
  */
 
-@TeleOp(name = "TeleOpNoPID")
-public class TeleOpNoPID extends SynchronousOpMode {
+@TeleOp(name = "Block Sort")
+public class BlockSort extends SynchronousOpMode {
 
     //Enums
 
@@ -55,6 +55,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     //shows what step the loadDispenser method is on
     private boolean loadStep1Complete = false;
     private long loadStep2StartTime = 0;
+    private long loadStep3StartTime = 0;
 
     //sees if this is the first time pressing button
     private boolean firstPressedDPad = true;
@@ -73,7 +74,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private long tapeStartTime = 0;
 
     // defaults to blue alliance
-    private boolean isBlue = false;
+    private boolean isBlue = true;
 
     //tells whether triggers are in resting position or are down/active, starts at rest
     private boolean atRestTriggers = true;
@@ -110,7 +111,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private static final double RIGHT_ZIP_DOWN = 0;
     private static final double LEFT_ZIP_UP = 0.195;
     private static final double LEFT_ZIP_DOWN = 0.07133;
-    private static final double LOCK_ENGAGED = 0.77;
+    private static final double LOCK_ENGAGED = 0.78;
     private static final double LOCK_DISENGAGED = .5;
     private static final double SHELF_STOW_LEFT = 0.8166;
     private static final double SHELF_STOW_RIGHT = 0.1833;
@@ -626,17 +627,25 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 loadStep2StartTime = System.currentTimeMillis();
             }
             if (loadStep1Complete) {
-                if (System.currentTimeMillis() - loadStep2StartTime < 1500) //500 value can be adjusted ARBITRARY
-                    motorHarvest.setPower(.6); //ARBITRARY - need to test for best speed for spinning out blocks
+                if (System.currentTimeMillis() - loadStep2StartTime < 1200) //500 value can be adjusted ARBITRARY
+                    motorHarvest.setPower(.4); //ARBITRARY - need to test for best speed for spinning out blocks
                 else {
-                    motorHarvest.setPower(0.0);
                     setArmPosition(ArmPosition.MOUNTAIN);
-                    toggleShelf(true);
-                    loadStep1Complete = false;
-                    runningLoadDispenser = false;
+                    if (!(motorArm.getCurrentPosition() >= motorArm.getTargetPosition() - 20 && motorArm.getCurrentPosition() <= motorArm.getTargetPosition() + 20)) {
+                        motorHarvest.setPower(0.0);
+                        loadStep3StartTime = System.currentTimeMillis();
+                    }
+                    else {
+                        motorHarvest.setPower(-1);
+                        if (System.currentTimeMillis() - loadStep3StartTime > 1000) {
+                            motorHarvest.setPower(0);
+                            toggleShelf(true);
+                            loadStep1Complete = false;
+                            runningLoadDispenser = false;
+                        }
+                    }
                 }
-            }
-            else {
+            } else {
                 if (motorArm.getCurrentPosition() <= -600) {
                     motorHarvest.setPower(0);
                 }
