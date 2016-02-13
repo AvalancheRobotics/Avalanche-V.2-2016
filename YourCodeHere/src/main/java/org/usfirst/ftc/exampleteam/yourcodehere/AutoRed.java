@@ -244,7 +244,7 @@ public class AutoRed extends SynchronousOpMode {
         else
             pivot(0.5, -176);
         moveForward(0.5, -15);
-        scoreClimbers(true);
+        //scoreClimbers(true);
         if (blue)
             pivot(0.5, -45);
         else

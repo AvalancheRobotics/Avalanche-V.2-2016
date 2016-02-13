@@ -637,7 +637,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 }
             }
             else {
-                if (motorArm.getCurrentPosition() <= -600) {
+                if (motorArm.getCurrentPosition() <= -250) {
                     motorHarvest.setPower(0);
                 }
             }
