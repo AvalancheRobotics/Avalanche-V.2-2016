@@ -82,7 +82,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private double tiltPos = .5;
 
     //used when climbing/descending the mountain to spin wheels backwards so we don't get stuck
-    private final double CONSTANT_UP_SPEED = .8;
+    private final double CONSTANT_UP_SPEED = .7;
     private final double CONSTANT_DOWN_SPEED = -.4;
 
     //motor values (measured in ticks)
@@ -209,27 +209,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
         motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
         motorTape.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
         motorArm.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-        //motorHarvest.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS); UNCOMMENT LATER ARBITRARY
-        /** DON'T FORGET
-         * U
-         * n
-         * C
-         * O
-         * M
-         * M
-         * E
-         * N
-         * T
-         *
-         *
-         * sadfa sf[0yqvgkhJLFDI;BJN,L;hkacm ,klshbnsdklzjxl fklmnxz,c ujkbdmnx,d jfvhjbkcf jdsphkbfops hknfdl gxn
-         *
-         *
-         *
-         *
-         *
-         *
-         */
+        motorHarvest.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
 
         motorSlide.setPower(1);
         motorArm.setPower(.3);
@@ -248,10 +228,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         motorArm.setTargetPosition(armInitPosition);
 
-
         //keep track of max length tape should extend
         //maxTapeLength = motorTape.getCurrentPosition() + 6000; //ARBITRARY
-
         //hangLength = motorTape.getCurrentPosition() + 5000; //ARBITRARY
 
 
@@ -357,7 +335,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
         }
 
         //adjust angle of tape
-        servoTape.setPosition(scaleInput(gamepad2.right_stick_y / 2) + .5);
+        servoTape.setPosition(-scaleInput(gamepad2.right_stick_y / 2) + .5);
 
         //auto positions for tilt
 
@@ -465,7 +443,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
             tapeStartTime = System.currentTimeMillis();
             firstPressedAutoSlide = false;
         }
-        if ((System.currentTimeMillis() - tapeStartTime) > 300) {
+        if ((System.currentTimeMillis() - tapeStartTime) > 200) {
             if (up) {
                 motorTape.setPower(1);
             } else {
@@ -489,7 +467,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 tapeStartTime = System.currentTimeMillis();
                 firstPressedDPad = true;
             }
-            if ((System.currentTimeMillis() - tapeStartTime) > 300) {
+            if ((System.currentTimeMillis() - tapeStartTime) > 200) {
                 if (gamepad1.dpad_up) {
                     motorTape.setPower(1);
                 } else {
@@ -645,7 +623,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
             }
             if (loadStep1Complete) {
                 if (System.currentTimeMillis() - loadStep2StartTime < 2300) //500 value can be adjusted ARBITRARY
-                    motorHarvest.setPower(.8); //ARBITRARY - need to test for best speed for spinning out blocks
+                    motorHarvest.setPower(.7); //ARBITRARY - need to test for best speed for spinning out blocks
                 else {
                     motorHarvest.setPower(0.0);
                     setArmPosition(ArmPosition.MOUNTAIN);
@@ -654,10 +632,10 @@ public class TeleOpNoPID extends SynchronousOpMode {
                     runningLoadDispenser = false;
                 }
             }
-        }
-        else {
-            if (motorArm.getCurrentPosition() <= -800) {
-                motorArm.setPower(0);
+            else {
+                if (motorArm.getCurrentPosition() <= -600) {
+                    motorHarvest.setPower(0);
+                }
             }
         }
     }
@@ -708,10 +686,6 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 }
 
             } else {
-                double input = scaleInput(gamepad1.left_stick_y);
-                if (input == 0) {
-
-                }
                 setLeftDrivePower(scaleInput(gamepad1.left_stick_y));
             }
 
