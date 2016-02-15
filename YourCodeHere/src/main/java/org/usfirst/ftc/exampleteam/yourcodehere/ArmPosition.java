@@ -7,5 +7,6 @@ public enum ArmPosition {
     INITIALIZE,
     HARVEST,
     DISPENSE,
-    MOUNTAIN
+    MOUNTAIN,
+    DESCEND
 }

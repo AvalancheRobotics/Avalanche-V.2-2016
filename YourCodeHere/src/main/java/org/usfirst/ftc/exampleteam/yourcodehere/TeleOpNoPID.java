@@ -21,7 +21,6 @@ import org.swerverobotics.library.interfaces.TeleOp;
 //MAKE TRIGGERS LESS SENSITIVE
 
 
-
 /**
  * DO
  * NOT
@@ -58,7 +57,6 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
     //sees if this is the first time pressing button
     private boolean firstPressedDPad = true;
-    private boolean firstPressedLeftTrigger = true;
     private boolean firstPressedAutoSlide = true;
 
     //Running Methods
@@ -78,12 +76,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
     //tells whether triggers are in resting position or are down/active, starts at rest
     private boolean atRestTriggers = true;
 
-    //current position when not manually controlling tilt
-    private double tiltPos = .5;
-
     //used when climbing/descending the mountain to spin wheels backwards so we don't get stuck
     private final double CONSTANT_UP_SPEED = .7;
-    private final double CONSTANT_DOWN_SPEED = -.4;
+    private final double HARVEST_SPEED = .7;
 
     //motor values (measured in ticks)
 
@@ -99,8 +94,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private double slideTopPosition;
     private int armInitPosition = -2335;
     private int armHarvestPosition = 0;
-    private int armDispensePosition = -1565;
-    private int armMountainPosition = -1965;
+    private int armDispensePosition = -1650;
+    private int armMountainPosition = -300; //-1965- old position, new one prevents tipping
+    private int armDescendPosition = -1000;
     //farthest slide can extend without damage
     private int maxSlideLength;
     //length which tape extends to to hang
@@ -108,17 +104,31 @@ public class TeleOpNoPID extends SynchronousOpMode {
     //Servo Values
     private static final double RIGHT_ZIP_UP = 0.753;
     private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = 0.195;
-    private static final double LEFT_ZIP_DOWN = 0.07133;
-    private static final double LOCK_ENGAGED = 0.77;
-    private static final double LOCK_DISENGAGED = .5;
-    private static final double SHELF_STOW_LEFT = 0.8166;
-    private static final double SHELF_STOW_RIGHT = 0.1833;
-    private static final double SHELF_DISPENSE_LEFT = 1;
-    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double LEFT_ZIP_UP = 0.293;
+    private static final double LEFT_ZIP_DOWN = 0.216667;
+    private static final double LOCK_ENGAGED = 1.0;
+    private static final double LOCK_DISENGAGED = .178333;
+    private static final double SHELF_STOW_LEFT = .287;
+    private static final double SHELF_STOW_RIGHT = .713;
+    private static final double SHELF_DISPENSE_LEFT = .476333;
+    private static final double SHELF_DISPENSE_RIGHT = .523666;
     private static final double DISPENSER_NEUTRAL = 0.5;
     private static final double DISPENSER_LEFT = 0.6693;
     private static final double DISPENSER_RIGHT = 0.3577;
+
+    private double pad1LeftStickX = 0;
+    private double pad1LeftStickY = 0;
+    private double pad1RightStickX = 0;
+    private double pad1RightStickY = 0;
+    private double pad2LeftStickX = 0;
+    private double pad2LeftStickY = 0;
+    private double pad2RightStickX = 0;
+    private double pad2RightStickY = 0;
+    private double pad1LeftTrigger = 0;
+    private double pad1RightTrigger = 0;
+    private double pad2LeftTrigger = 0;
+    private double pad2RightTrigger = 0;
+    private float disconnectTimer = 0;
 
     // Declare drive motors
     DcMotor motorLeftFore;
@@ -301,17 +311,12 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         //starts and stops harvester
         if (gamepad1.x && !gamepad1.back) { //so it doesn't run when we try to change teams (uses x)
-            toggleHarvester(.9);
+            toggleHarvester(HARVEST_SPEED);
         }
 
         //toggles harvester spin direction
         if (gamepad1.left_bumper)
-            motorHarvest.setPower(-motorHarvest.getPower());
-
-
-        //Read Joystick Data and Update Speed of Left and Right Motors
-        //If joystick buttons are pressed, sets drive power to preset value
-        manualDriveControls(true);
+            motorHarvest.setPower(-HARVEST_SPEED);
 
 
         //toggles zip line position
@@ -325,13 +330,17 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
 
         //Stops any auto methods using slides and manually controls power with joysticks
-        if (gamepad2.left_stick_y < -.2 || gamepad2.left_stick_y > .2) { //Threshold so you don't accidentally start running the slides manually
-            motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        if (scaleInput(gamepad2.left_stick_y) != 0) { //Threshold so you don't accidentally start running the slides manually
+            if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
+                motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            }
             motorSlide.setPower(scaleInput(gamepad2.left_stick_y));
         } else {
+            if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+                motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+                motorSlide.setPower(.5);
+            }
             motorSlide.setTargetPosition(motorSlide.getCurrentPosition());
-            motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-            motorSlide.setPower(.5);
         }
 
         //adjust angle of tape
@@ -353,6 +362,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         if (gamepad2.dpad_up) {
             setArmPosition(ArmPosition.INITIALIZE);
+            servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
+            servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
         }
 
     }
@@ -383,11 +394,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
         // auto tape extend
         if (gamepad1.a || gamepad1.y) {
 
-            if (runningAutoSlide) {
-                motorTape.setPower(0);
-                firstPressedAutoSlide = true;
-            }
-            else {
+            if (!runningAutoSlide) {
                 if (gamepad1.a) {
                     runningExtend = false;
                 }
@@ -410,7 +417,18 @@ public class TeleOpNoPID extends SynchronousOpMode {
      */
     private void runAllAutoMethods() {
 
+
+        //Read Joystick Data and Update Speed of Left and Right Motors
+        //If joystick buttons are pressed, sets drive power to preset value
+        //Reads joystick values and needs to update fast so not in manual methods
+
+        /** ADDED PART THAT SHUTS OFF DRIVE IF DISCONNECTED*/
+        //manualDriveControls(true); - NO AUTO STOP
+        disconnectStopDrive();
+
+
         if (!runningAutoSlide) {
+            firstPressedAutoSlide = true;
             tapeLengthManualControls();
         } else {
             tapeLengthAutoControls(runningExtend);
@@ -421,16 +439,18 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         //manual controls but needs to be run every time
         //manually adjust the tilt of dispenser
-        if (gamepad2.right_trigger > .1 || gamepad2.left_trigger > .1) {
+        if (gamepad2.right_trigger > .08 || gamepad2.left_trigger > .08) {
             if (gamepad2.right_trigger > gamepad2.left_trigger) {
-                servoTilt.setPosition(Math.min((-gamepad2.right_trigger/3) + .5, .7));
+                if (gamepad2.right_trigger > .15) {
+                    servoTilt.setPosition(.5);
+                }
+                servoTilt.setPosition(Math.min((-gamepad2.right_trigger / 3) + .5, HARVEST_SPEED));
+            } else {
+                if (gamepad2.left_trigger > .15) {
+                    servoTilt.setPosition(.5);
+                }
+                servoTilt.setPosition(Math.max(gamepad2.left_trigger / 3 + .5, .3));
             }
-            else {
-                servoTilt.setPosition(Math.max(gamepad2.left_trigger/3 + .5, .3));
-            }
-        }
-        else {
-            //servoTilt.setPosition(tiltPos);
         }
     }
 
@@ -489,9 +509,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
             }
         } else {
             motorTape.setPower(0.0);
-            if (motorTape.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
-                servoLock.setPosition(LOCK_ENGAGED);
-            }
+            servoLock.setPosition(LOCK_ENGAGED);
             firstPressedDPad = false;
         }
     }
@@ -536,6 +554,12 @@ public class TeleOpNoPID extends SynchronousOpMode {
     //                                                                                            //
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private void setDriveMode(DcMotorController.RunMode driveMode) {
+        motorLeftAft.setMode(driveMode);
+        motorLeftFore.setMode(driveMode);
+        motorRightAft.setMode(driveMode);
+        motorRightFore.setMode(driveMode);
+    }
 
     private void setLeftDrivePower(double power) {
         motorLeftFore.setPower(power);
@@ -626,8 +650,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 loadStep2StartTime = System.currentTimeMillis();
             }
             if (loadStep1Complete) {
-                if (System.currentTimeMillis() - loadStep2StartTime < 1500) //500 value can be adjusted ARBITRARY
-                    motorHarvest.setPower(.6); //ARBITRARY - need to test for best speed for spinning out blocks
+                if (System.currentTimeMillis() - loadStep2StartTime < 700) //500 value can be adjusted ARBITRARY
+                    motorHarvest.setPower(.25); //ARBITRARY - need to test for best speed for spinning out blocks
                 else {
                     motorHarvest.setPower(0.0);
                     setArmPosition(ArmPosition.MOUNTAIN);
@@ -635,9 +659,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
                     loadStep1Complete = false;
                     runningLoadDispenser = false;
                 }
-            }
-            else {
-                if (motorArm.getCurrentPosition() <= -250) {
+            } else {
+                if (motorArm.getCurrentPosition() <= -270) {
                     motorHarvest.setPower(0);
                 }
             }
@@ -678,33 +701,48 @@ public class TeleOpNoPID extends SynchronousOpMode {
   */
     private void manualDriveControls(boolean usingTankDrive) {
         if (usingTankDrive) { //tank drive
-            if (gamepad1.right_trigger > .7 || gamepad1.left_trigger > .7) {
-                if (gamepad1.right_trigger > gamepad1.left_trigger) {
-                    setForePower(CONSTANT_UP_SPEED/2);
-                    setAftPower(CONSTANT_UP_SPEED);
-                }
-                else
-                {
-                    setForePower(CONSTANT_DOWN_SPEED);
-                    setAftPower(CONSTANT_DOWN_SPEED/2);
-                }
-
-            } else {
-                setLeftDrivePower(scaleInput(gamepad1.left_stick_y));
-            }
-
-            if (gamepad1.right_trigger > .7 || gamepad1.left_trigger > .7) {
-                if (gamepad1.right_trigger > gamepad1.left_trigger) {
-                    setForePower(CONSTANT_UP_SPEED/2);
-                    setAftPower(CONSTANT_UP_SPEED);
-                }
-                else
-                {
-                    setForePower(CONSTANT_DOWN_SPEED);
-                    setAftPower(CONSTANT_DOWN_SPEED/2);
+            if (scaleInput(gamepad1.left_stick_y) == 0 && scaleInput(gamepad1.right_stick_y) == 0 && gamepad1.right_trigger < .7 && gamepad1.left_trigger < .9) {
+                if (motorLeftAft.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
+                    setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
+                    motorRightAft.setTargetPosition(motorRightAft.getCurrentPosition());
+                    motorLeftAft.setTargetPosition(motorLeftAft.getCurrentPosition());
+                    motorLeftFore.setTargetPosition(motorLeftFore.getCurrentPosition());
+                    motorRightFore.setTargetPosition(motorRightFore.getCurrentPosition());
+                    setLeftDrivePower(1);
+                    setRightDrivePower(1);
                 }
             } else {
-                setRightDrivePower(scaleInput(gamepad1.right_stick_y));
+                if (motorLeftAft.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+                    setDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+                }
+
+                if (gamepad1.right_trigger > .7 || gamepad1.left_trigger > .7) {
+                    if (gamepad1.right_trigger > gamepad1.left_trigger) {
+                        setForePower(CONSTANT_UP_SPEED / 2);
+                        setAftPower(CONSTANT_UP_SPEED);
+                    } else {
+                        if (gamepad1.left_trigger > .2) {
+                            setArmPosition(ArmPosition.DESCEND);
+                        }
+
+                        if (gamepad1.left_trigger > .9) {
+                            setForePower(-1);
+                            setAftPower(-1);
+                        }
+                    }
+
+                } else {
+                    setLeftDrivePower(scaleInput(gamepad1.left_stick_y));
+                }
+
+                if (gamepad1.right_trigger > .7 || gamepad1.left_trigger > .7) {
+                    if (gamepad1.right_trigger > gamepad1.left_trigger) {
+                        setForePower(CONSTANT_UP_SPEED / 2);
+                        setAftPower(CONSTANT_UP_SPEED);
+                    }
+                } else {
+                    setRightDrivePower(scaleInput(gamepad1.right_stick_y));
+                }
             }
 
 
@@ -741,6 +779,10 @@ public class TeleOpNoPID extends SynchronousOpMode {
         if (ArmPosition.MOUNTAIN == position) {
             motorArm.setTargetPosition(armMountainPosition);
         }
+
+        if (ArmPosition.DESCEND == position) {
+            motorArm.setTargetPosition(armDescendPosition);
+        }
     }
 
     private void toggleShelf(boolean stow) {
@@ -757,8 +799,46 @@ public class TeleOpNoPID extends SynchronousOpMode {
         if (button) {
             toggleShelf(true);
             setArmPosition(ArmPosition.HARVEST);
-            motorHarvest.setPower(.9);
+            motorHarvest.setPower(HARVEST_SPEED);
             runningLoadDispenser = false;
         }
+    }
+
+    //drive controls that stops drive motors if we disconnect
+    private void disconnectStopDrive() {
+        if (
+                pad1LeftStickX == gamepad1.left_stick_x
+                        && pad1LeftStickY == gamepad1.left_stick_y
+                        && pad1LeftTrigger == gamepad1.left_trigger
+                        && pad1RightStickX == gamepad1.right_stick_x
+                        && pad1RightStickY == gamepad1.right_stick_y
+                        && pad1RightTrigger == gamepad1.right_trigger
+                        && pad2LeftStickX == gamepad2.left_stick_x
+                        && pad2LeftStickY == gamepad2.left_stick_y
+                        && pad2LeftTrigger == gamepad2.left_trigger
+                        && pad2RightStickX == gamepad2.right_stick_x
+                        && pad2RightStickY == gamepad2.right_stick_y
+                        && pad2RightTrigger == gamepad2.right_trigger
+                ) {
+            if (System.currentTimeMillis() - disconnectTimer > 2000) {
+                setRightDrivePower(0);
+                setLeftDrivePower(0);
+            }
+        } else {
+            disconnectTimer = System.currentTimeMillis();
+            manualDriveControls(true);
+        }
+
+        pad1LeftStickY = gamepad1.left_stick_y;
+        pad1LeftTrigger = gamepad1.left_trigger;
+        pad1RightStickX = gamepad1.right_stick_x;
+        pad1RightStickY = gamepad1.right_stick_y;
+        pad1RightTrigger = gamepad1.right_trigger;
+        pad2LeftStickX = gamepad2.left_stick_x;
+        pad2LeftStickY = gamepad2.left_stick_y;
+        pad2LeftTrigger = gamepad2.left_trigger;
+        pad2RightStickX = gamepad2.right_stick_x;
+        pad2RightStickY = gamepad2.right_stick_y;
+        pad2RightTrigger = gamepad2.right_trigger;
     }
 }

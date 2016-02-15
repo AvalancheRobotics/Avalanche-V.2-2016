@@ -53,18 +53,17 @@ public class Auto6253 extends SynchronousOpMode {
     //Servo Values
     private static final double RIGHT_ZIP_UP = 0.753;
     private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = 0.1677;
-    private static final double LEFT_ZIP_DOWN = 1;
-    private static final double LOCK_ENGAGED = 0.83;
-    private static final double LOCK_DISENGAGED = .5;
-    private static final double SHELF_STOW_LEFT = 0.8166;
-    private static final double SHELF_STOW_RIGHT = 0.1833;
-    private static final double SHELF_DISPENSE_LEFT = 1;
-    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double LEFT_ZIP_UP = 0.293;
+    private static final double LEFT_ZIP_DOWN = 0.216667;
+    private static final double LOCK_ENGAGED = 1.0;
+    private static final double LOCK_DISENGAGED = .178333;
+    private static final double SHELF_STOW_LEFT = .287;
+    private static final double SHELF_STOW_RIGHT = .713;
+    private static final double SHELF_DISPENSE_LEFT = .476333;
+    private static final double SHELF_DISPENSE_RIGHT = .523666;
     private static final double DISPENSER_NEUTRAL = 0.5;
     private static final double DISPENSER_LEFT = 0.6693;
     private static final double DISPENSER_RIGHT = 0.3577;
-
 
     // Declare drive motors
     DcMotor motorLeftFore;
@@ -117,7 +116,7 @@ public class Auto6253 extends SynchronousOpMode {
         // Initialize drawer slide motor and servos
         motorSlide = hardwareMap.dcMotor.get("Slide");
         servoTilt = hardwareMap.servo.get("Tilt");
-        servoTilt.setPosition(0.5);
+        servoTilt.setPosition(DISPENSER_NEUTRAL);
 
         // Initialize tape measure motor and servo
         motorTape = hardwareMap.dcMotor.get("Tape");
@@ -136,8 +135,8 @@ public class Auto6253 extends SynchronousOpMode {
         // Initialize zipline flipping servos
         servoLeftZip = hardwareMap.servo.get("LeftZip");
         servoRightZip = hardwareMap.servo.get("RightZip");
-        servoLeftZip.setPosition(0.195);
-        servoRightZip.setPosition(0.753);
+        servoLeftZip.setPosition(LEFT_ZIP_UP);
+        servoRightZip.setPosition(RIGHT_ZIP_UP);
 
 
         // Initialize sensors

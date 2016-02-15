@@ -109,14 +109,14 @@ public class BlockSort extends SynchronousOpMode {
     //Servo Values
     private static final double RIGHT_ZIP_UP = 0.753;
     private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = 0.195;
-    private static final double LEFT_ZIP_DOWN = 0.07133;
-    private static final double LOCK_ENGAGED = 0.78;
-    private static final double LOCK_DISENGAGED = .5;
-    private static final double SHELF_STOW_LEFT = 0.8166;
-    private static final double SHELF_STOW_RIGHT = 0.1833;
-    private static final double SHELF_DISPENSE_LEFT = 1;
-    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double LEFT_ZIP_UP = 0.293;
+    private static final double LEFT_ZIP_DOWN = 0.216667;
+    private static final double LOCK_ENGAGED = 1.0;
+    private static final double LOCK_DISENGAGED = .178333;
+    private static final double SHELF_STOW_LEFT = .287;
+    private static final double SHELF_STOW_RIGHT = .713;
+    private static final double SHELF_DISPENSE_LEFT = .476333;
+    private static final double SHELF_DISPENSE_RIGHT = .523666;
     private static final double DISPENSER_NEUTRAL = 0.5;
     private static final double DISPENSER_LEFT = 0.6693;
     private static final double DISPENSER_RIGHT = 0.3577;
