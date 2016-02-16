@@ -63,6 +63,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private boolean runningLoadDispenser = false;
     private boolean runningAutoSlide = false;
     private boolean runningExtend = false;
+    private boolean runningAutoRetract = false;
 
     //shows what step score method is on
     private int scoreToggle = 0;
@@ -89,16 +90,16 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private int maxTapeLength;
 
     //Motor Positions
-    private double slideBotPosition;
-    private double slideMidPosition;
-    private double slideTopPosition;
+    private double slideBotPosition = -2825;
+    private double slideMidPosition = -2188;
+    private double slideTopPosition = 7600;
     private int armInitPosition = -2335;
     private int armHarvestPosition = 0;
     private int armDispensePosition = -1650;
     private int armMountainPosition = -300; //-1965- old position, new one prevents tipping
     private int armDescendPosition = -1000;
     //farthest slide can extend without damage
-    private int maxSlideLength;
+    private int maxSlideLength = 7659876; //ARBITRARY
     //length which tape extends to to hang
 
     //Servo Values
@@ -230,11 +231,6 @@ public class TeleOpNoPID extends SynchronousOpMode {
         startPosTape = motorSlide.getCurrentPosition();
         motorSlide.setTargetPosition(startPosSlide);
 
-        //Score heights for slides
-        slideBotPosition = -2825;
-        slideMidPosition = -2188;
-        slideTopPosition = -7600; //ARBITRARY
-        //maxSlideLength = startPosTape + 12000; //ARBITRARY
 
         motorArm.setTargetPosition(armInitPosition);
 
@@ -316,13 +312,16 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         //toggles harvester spin direction
         if (gamepad1.left_bumper)
-            motorHarvest.setPower(-HARVEST_SPEED);
-
+            if (motorHarvest.getPower() == -HARVEST_SPEED) {
+                motorHarvest.setPower(0);
+            }
+        else {
+                motorHarvest.setPower(-HARVEST_SPEED);
+            }
 
         //toggles zip line position
         if (gamepad2.y)
             triggerZipline();
-
 
         //stops all motors and cancels all motor operations, basically a panic button that stops all functions
         if ((gamepad1.back && gamepad1.start) || (gamepad2.back && gamepad2.start))
@@ -333,14 +332,22 @@ public class TeleOpNoPID extends SynchronousOpMode {
         if (scaleInput(gamepad2.left_stick_y) != 0) { //Threshold so you don't accidentally start running the slides manually
             if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
                 motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+                runningAutoRetract = false;
             }
             motorSlide.setPower(scaleInput(gamepad2.left_stick_y));
         } else {
-            if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
-                motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-                motorSlide.setPower(.5);
+            if (runningAutoRetract) {
+                if (motorSlide.getCurrentPosition() >= motorSlide.getTargetPosition() - 20 && motorSlide.getCurrentPosition() <= motorSlide.getTargetPosition() + 20) {
+                    runningAutoRetract = false;
+                }
             }
-            motorSlide.setTargetPosition(motorSlide.getCurrentPosition());
+            else {
+                if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+                    motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+                    motorSlide.setPower(.5);
+                    motorSlide.setTargetPosition(motorSlide.getCurrentPosition());
+                }
+            }
         }
 
         //adjust angle of tape
@@ -365,6 +372,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
             servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
             servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
         }
+
+        retractSlides(gamepad2.dpad_down);
 
     }
 
@@ -439,17 +448,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         //manual controls but needs to be run every time
         //manually adjust the tilt of dispenser
-        if (gamepad2.right_trigger > .08 || gamepad2.left_trigger > .08) {
+        if (scaleInput(gamepad2.right_trigger) != 0 || scaleInput(gamepad2.left_trigger) != 0) {
             if (gamepad2.right_trigger > gamepad2.left_trigger) {
-                if (gamepad2.right_trigger > .15) {
-                    servoTilt.setPosition(.5);
-                }
-                servoTilt.setPosition(Math.min((-gamepad2.right_trigger / 3) + .5, HARVEST_SPEED));
+                servoTilt.setPosition(Math.min((-scaleInput(gamepad2.right_trigger) / 3) + .5, .7));
             } else {
-                if (gamepad2.left_trigger > .15) {
-                    servoTilt.setPosition(.5);
-                }
-                servoTilt.setPosition(Math.max(gamepad2.left_trigger / 3 + .5, .3));
+                servoTilt.setPosition(Math.max(scaleInput(gamepad2.left_trigger) / 3 + .5, .3));
             }
         }
     }
@@ -637,6 +640,18 @@ public class TeleOpNoPID extends SynchronousOpMode {
         }
     }
 
+    private void retractSlides(boolean button) {
+        if (button) {
+            if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+                motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+            }
+            motorSlide.setPower(1);
+            motorSlide.setTargetPosition(startPosSlide);
+            runningAutoRetract = true;
+        }
+    }
+
+
     private void loadDispenserSet() {
         runningLoadDispenser = true;
         toggleShelf(false);
@@ -650,7 +665,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 loadStep2StartTime = System.currentTimeMillis();
             }
             if (loadStep1Complete) {
-                if (System.currentTimeMillis() - loadStep2StartTime < 700) //500 value can be adjusted ARBITRARY
+                if (System.currentTimeMillis() - loadStep2StartTime < 600) //500 value can be adjusted ARBITRARY
                     motorHarvest.setPower(.25); //ARBITRARY - need to test for best speed for spinning out blocks
                 else {
                     motorHarvest.setPower(0.0);
@@ -821,8 +836,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
                         && pad2RightTrigger == gamepad2.right_trigger
                 ) {
             if (System.currentTimeMillis() - disconnectTimer > 2000) {
-                setRightDrivePower(0);
-                setLeftDrivePower(0);
+                if (!motorLeftAft.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+                    setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
+                }
+                setRightDrivePower(1);
+                setLeftDrivePower(1);
             }
         } else {
             disconnectTimer = System.currentTimeMillis();
