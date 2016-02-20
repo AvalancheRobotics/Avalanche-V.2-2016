@@ -9,12 +9,8 @@ import org.swerverobotics.library.interfaces.TeleOp;
 /**
  * TO DO LIST:
  * Debug and Test.
- * <p>
- * <p>
- * /**
- * Version 1.0 of Team Avalanche 6253's TeleOp program for Robot version 2.0.
- * Currently most distance and position values are arbitrary due to not having a complete robot we can test values on.
- * Nearly finished, all methods save loadDispenser are written, needs some fixing, values, and a lot of testing.
+ *
+ * Version 2.2 of Team Avalanche 6253's TeleOp program for Robot version 2.0.
  * UNLIKE NORMAL TELEOP, USES FTC'S BUILT IN MOVE_TO_POSITION which causes the motor to move more slowly but is also more accurate and easier to code than custom PID
  */
 
@@ -78,8 +74,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private boolean atRestTriggers = true;
 
     //used when climbing/descending the mountain to spin wheels backwards so we don't get stuck
-    private final double CONSTANT_UP_SPEED = .7;
-    private final double HARVEST_SPEED = .7;
+    private final double CONSTANT_UP_SPEED = .75;
+    private final double HARVEST_SPEED = .62;
 
     //motor values (measured in ticks)
 
@@ -93,11 +89,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private double slideBotPosition = -2825;
     private double slideMidPosition = -2188;
     private double slideTopPosition = 7600;
-    private int armInitPosition = -2335;
-    private int armHarvestPosition = 0;
-    private int armDispensePosition = -1650;
-    private int armMountainPosition = -300; //-1965- old position, new one prevents tipping
-    private int armDescendPosition = -1000;
+    private int armInitPosition;
+    private int armHarvestPosition;
+    private int armDispensePosition;
+    private int armMountainPosition;
+    private int armDescendPosition;
     //farthest slide can extend without damage
     private int maxSlideLength = 7659876; //ARBITRARY
     //length which tape extends to to hang
@@ -109,12 +105,12 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private static final double LEFT_ZIP_DOWN = 0.216667;
     private static final double LOCK_ENGAGED = 1.0;
     private static final double LOCK_DISENGAGED = .178333;
-    private static final double SHELF_STOW_LEFT = .287;
-    private static final double SHELF_STOW_RIGHT = .713;
-    private static final double SHELF_DISPENSE_LEFT = .476333;
-    private static final double SHELF_DISPENSE_RIGHT = .523666;
+    private static final double SHELF_STOW_LEFT = .5;
+    private static final double SHELF_STOW_RIGHT = .75;
+    private static final double SHELF_DISPENSE_LEFT = .3713333;
+    private static final double SHELF_DISPENSE_RIGHT = .6286666;
     private static final double DISPENSER_NEUTRAL = 0.5;
-    private static final double DISPENSER_LEFT = 0.6693;
+    private static final double DISPENSER_LEFT = .593666;
     private static final double DISPENSER_RIGHT = 0.3577;
 
     private double pad1LeftStickX = 0;
@@ -231,6 +227,11 @@ public class TeleOpNoPID extends SynchronousOpMode {
         startPosTape = motorSlide.getCurrentPosition();
         motorSlide.setTargetPosition(startPosSlide);
 
+        armInitPosition = startPosArm + -2335;
+        armHarvestPosition = startPosArm + 0;
+        armDispensePosition = startPosArm + -1650;
+        armMountainPosition = startPosArm + -300; //-1965- old position, new one prevents tipping
+        armDescendPosition = startPosArm + -1000;
 
         motorArm.setTargetPosition(armInitPosition);
 
@@ -307,7 +308,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         //starts and stops harvester
         if (gamepad1.x && !gamepad1.back) { //so it doesn't run when we try to change teams (uses x)
-            toggleHarvester(HARVEST_SPEED);
+                toggleHarvester(HARVEST_SPEED);
         }
 
         //toggles harvester spin direction
@@ -375,6 +376,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
         retractSlides(gamepad2.dpad_down);
 
+
     }
 
     /**
@@ -427,14 +429,22 @@ public class TeleOpNoPID extends SynchronousOpMode {
     private void runAllAutoMethods() {
 
 
+        if (gamepad2.dpad_left) {
+            motorArm.setTargetPosition(motorArm.getCurrentPosition() + 20);
+            startPosArm = motorArm.getCurrentPosition();
+            armInitPosition = startPosArm + -2335;
+            armHarvestPosition = startPosArm + 0;
+            armDispensePosition = startPosArm + -1650;
+            armMountainPosition = startPosArm + -300; //-1965- old position, new one prevents tipping
+            armDescendPosition = startPosArm + -1000;
+        }
+
         //Read Joystick Data and Update Speed of Left and Right Motors
         //If joystick buttons are pressed, sets drive power to preset value
         //Reads joystick values and needs to update fast so not in manual methods
 
         /** ADDED PART THAT SHUTS OFF DRIVE IF DISCONNECTED*/
-        //manualDriveControls(true); - NO AUTO STOP
-        disconnectStopDrive();
-
+        manualDriveControls(true);
 
         if (!runningAutoSlide) {
             firstPressedAutoSlide = true;
@@ -474,10 +484,10 @@ public class TeleOpNoPID extends SynchronousOpMode {
             if (up) {
                 motorTape.setPower(1);
             } else {
-                if (motorTape.getCurrentPosition() > startPosTape + 40) {
+                //if (motorTape.getCurrentPosition() > startPosTape + 40) { UNCOMMENT WHEN ENCODERS ARE FIXED ARBITRARY
                     motorTape.setPower(-1);
-                } else
-                    motorTape.setPower(0);
+                //} else
+                    //motorTape.setPower(0);
             }
         } else {
             motorTape.setPower(-.5); //REVERSE THE MOTOR BEFORE DISENGAGING THE LOCK TO PREVENT GETTING STUCK
@@ -498,13 +508,13 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 if (gamepad1.dpad_up) {
                     motorTape.setPower(1);
                 } else {
-                    if (motorTape.getCurrentPosition() > startPosTape + 40 || (!gamepad1.back && gamepad1.b)) {
+                   // if (motorTape.getCurrentPosition() > startPosTape + 40 || (!gamepad1.back && gamepad1.b)) {
                         motorTape.setPower(-1);
-                        if (gamepad1.b) {
-                            startPosTape = motorTape.getCurrentPosition();
-                        }
-                    } else
-                        motorTape.setPower(0);
+                   //     if (gamepad1.b) {
+                   //         startPosTape = motorTape.getCurrentPosition();
+                   //     }
+                   // } else
+                   //     motorTape.setPower(0);
                 }
             } else {
                 motorTape.setPower(-.5); //REVERSE THE MOTOR BEFORE DISENGAGING THE LOCK TO PREVENT GETTING STUCK
@@ -665,8 +675,8 @@ public class TeleOpNoPID extends SynchronousOpMode {
                 loadStep2StartTime = System.currentTimeMillis();
             }
             if (loadStep1Complete) {
-                if (System.currentTimeMillis() - loadStep2StartTime < 600) //500 value can be adjusted ARBITRARY
-                    motorHarvest.setPower(.25); //ARBITRARY - need to test for best speed for spinning out blocks
+                if (System.currentTimeMillis() - loadStep2StartTime < 800) //500 value can be adjusted ARBITRARY
+                    motorHarvest.setPower(.32); //ARBITRARY - need to test for best speed for spinning out blocks
                 else {
                     motorHarvest.setPower(0.0);
                     setArmPosition(ArmPosition.MOUNTAIN);
@@ -733,7 +743,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
                 if (gamepad1.right_trigger > .7 || gamepad1.left_trigger > .7) {
                     if (gamepad1.right_trigger > gamepad1.left_trigger) {
-                        setForePower(CONSTANT_UP_SPEED / 2);
+                        setForePower(CONSTANT_UP_SPEED / 1.6);
                         setAftPower(CONSTANT_UP_SPEED);
                     } else {
                         if (gamepad1.left_trigger > .2) {
@@ -742,7 +752,7 @@ public class TeleOpNoPID extends SynchronousOpMode {
 
                         if (gamepad1.left_trigger > .9) {
                             setForePower(-1);
-                            setAftPower(-1);
+                            setAftPower(-.8);
                         }
                     }
 
@@ -819,7 +829,9 @@ public class TeleOpNoPID extends SynchronousOpMode {
         }
     }
 
-    //drive controls that stops drive motors if we disconnect
+    //drive controls that stops drive motors if we disconnect - Doesn't work due to what happens during a disconnect
+    //we think during a disconnect the control part of a CPDM stops regulating the power therefore this code is useless in preventing disconnects.
+    //However, it can prevent our robot from moving in event of a controller disconnect.
     private void disconnectStopDrive() {
         if (
                 pad1LeftStickX == gamepad1.left_stick_x

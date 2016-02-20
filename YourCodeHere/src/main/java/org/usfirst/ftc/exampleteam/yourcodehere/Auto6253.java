@@ -57,12 +57,12 @@ public class Auto6253 extends SynchronousOpMode {
     private static final double LEFT_ZIP_DOWN = 0.216667;
     private static final double LOCK_ENGAGED = 1.0;
     private static final double LOCK_DISENGAGED = .178333;
-    private static final double SHELF_STOW_LEFT = .287;
-    private static final double SHELF_STOW_RIGHT = .713;
-    private static final double SHELF_DISPENSE_LEFT = .476333;
-    private static final double SHELF_DISPENSE_RIGHT = .523666;
+    private static final double SHELF_STOW_LEFT = .5;
+    private static final double SHELF_STOW_RIGHT = .75;
+    private static final double SHELF_DISPENSE_LEFT = .40;
+    private static final double SHELF_DISPENSE_RIGHT = .60;
     private static final double DISPENSER_NEUTRAL = 0.5;
-    private static final double DISPENSER_LEFT = 0.6693;
+    private static final double DISPENSER_LEFT = .593666;
     private static final double DISPENSER_RIGHT = 0.3577;
 
     // Declare drive motors
@@ -93,6 +93,12 @@ public class Auto6253 extends SynchronousOpMode {
     // Declare zipline flipping servos
     Servo servoLeftZip;
     Servo servoRightZip;
+
+    // Declare ramp servos
+    Servo servoLeftRamp;
+    Servo servoRightRamp;
+
+    Servo servoLock;
 
     // Declare sensors
     //  GyroSensor gyro;
@@ -137,6 +143,17 @@ public class Auto6253 extends SynchronousOpMode {
         servoRightZip = hardwareMap.servo.get("RightZip");
         servoLeftZip.setPosition(LEFT_ZIP_UP);
         servoRightZip.setPosition(RIGHT_ZIP_UP);
+
+        // Initialize ramp servos
+        servoLeftRamp = hardwareMap.servo.get("LeftRamp");
+        servoRightRamp = hardwareMap.servo.get("RightRamp");
+        servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
+        servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
+
+        servoLock = hardwareMap.servo.get("Lock");
+        servoLock.setPosition(LOCK_DISENGAGED);
+
+
 
 
         // Initialize sensors
@@ -225,35 +242,44 @@ public class Auto6253 extends SynchronousOpMode {
     public void v2AutoSquare(boolean blue) throws InterruptedException {
         lowerArm();
         motorHarvest.setPower(-1);
-        Thread.sleep(2000);
-        moveForward(0.5, 11);
-        if (blue)
-            pivot(0.3, 52);
+        Thread.sleep(1500);
+        moveForward(0.6, 13);
+        if(blue)
+            pivot(0.4, 46);
         else
-            pivot(0.3, -52);
-        moveForward(0.5, 77);
-        if (blue)
-            pivot(0.5, 40);
+            pivot(0.4, -46);
+        moveForward(0.8, 97);
+        if(blue)
+            pivot(0.4, 209);
         else
-            pivot(0.5, -40);
-        moveForward(0.5, 10);
-        moveForward(0.5, -10);
-        if (blue)
-            pivot(0.5, 176);
+            pivot(0.4, -209);
+        moveForward(0.6, -3);
+        extendSlides();
+        if(blue)
+            pivot(0.4, 8);
         else
-            pivot(0.5, -176);
-        moveForward(0.5, -15);
-        //scoreClimbers(true);
-        if (blue)
-            pivot(0.5, -45);
+            pivot(0.4, -8);
+        releaseClimbers(blue);
+        if(blue)
+            pivot(0.4, -8);
         else
-            pivot(0.5, 45);
-        moveForward(0.5, 25);
-        if (blue)
-            pivot(0.5, 84);
+            pivot(0.4, 8);
+        retractSlides();
+        if(blue)
+            pivot(0.4, -63);
         else
-            pivot(0.5, -84);
-        moveForward(0.5, -13);
+            pivot(0.4, 63);
+        moveForward(0.6, 21);
+        if(blue)
+            pivot(0.4, 18);
+        else
+            pivot(0.4, -18);
+        moveForward(0.6, 18);
+        if(blue)
+            pivot(0.4, 110);
+        else
+            pivot(0.4, -110);
+        moveForward(0.6, -16);
         motorHarvest.setPower(0);
     }
 
@@ -497,7 +523,7 @@ public class Auto6253 extends SynchronousOpMode {
     }
 
     public void extendSlides() throws InterruptedException {
-        int distance = -4740;
+        int distance = -4450;
         double power = 1;
 
         motorSlide.setTargetPosition(motorSlide.getCurrentPosition() + distance);
@@ -512,8 +538,11 @@ public class Auto6253 extends SynchronousOpMode {
     }
 
     public void retractSlides() throws InterruptedException {
-        int distance = 4740;
+        int distance = 4450;
         double power = 1;
+
+        servoRightRamp.setPosition(SHELF_STOW_RIGHT);
+        servoLeftRamp.setPosition(SHELF_STOW_LEFT);
 
         motorSlide.setTargetPosition(motorSlide.getCurrentPosition() + distance);
 
@@ -528,19 +557,15 @@ public class Auto6253 extends SynchronousOpMode {
 
     public void releaseClimbers(boolean left) throws InterruptedException {
         if (left) {
-            servoTilt.setPosition(.3);
-            Thread.sleep(400);
-            servoTilt.setPosition(0.65);
-            Thread.sleep(3000);
-            servoTilt.setPosition(0.5);
+            servoTilt.setPosition(0.18);
             Thread.sleep(2000);
+            servoTilt.setPosition(0.5);
+            Thread.sleep(1000);
         } else {
-            servoTilt.setPosition(.7);
-            Thread.sleep(400);
-            servoTilt.setPosition(0.35);
-            Thread.sleep(3000);
-            servoTilt.setPosition(0.5);
+            servoTilt.setPosition(0.82);
             Thread.sleep(2000);
+            servoTilt.setPosition(0.5);
+            Thread.sleep(1000);
         }
     }
 

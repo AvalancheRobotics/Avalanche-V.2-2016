@@ -32,13 +32,18 @@ MAKE SURE YOU WIPE THE DISTANCE (HIT Y) AFTER YOU GET DATA FROM EACH STEP OR REA
 public class AutoMakerInches extends SynchronousOpMode {
     //Servo Values
     private static final double RIGHT_ZIP_UP = 0.753;
-    private static final double LEFT_ZIP_UP = 0.1677;
-
-    private static final double LOCK_DISENGAGED = .5;
-
-    private static final double SHELF_DISPENSE_LEFT = 1;
-    private static final double SHELF_DISPENSE_RIGHT = 0;
+    private static final double RIGHT_ZIP_DOWN = 0;
+    private static final double LEFT_ZIP_UP = 0.293;
+    private static final double LEFT_ZIP_DOWN = 0.216667;
+    private static final double LOCK_ENGAGED = 1.0;
+    private static final double LOCK_DISENGAGED = .178333;
+    private static final double SHELF_STOW_LEFT = .5;
+    private static final double SHELF_STOW_RIGHT = .75;
+    private static final double SHELF_DISPENSE_LEFT = .3713333;
+    private static final double SHELF_DISPENSE_RIGHT = .6286666;
     private static final double DISPENSER_NEUTRAL = 0.5;
+    private static final double DISPENSER_LEFT = .593666;
+    private static final double DISPENSER_RIGHT = 0.3577;
 
     private double TICKS_PER_INCH = 133.7;
     private double TICKS_PER_DEGREE_DRIVE = (51.84*TICKS_PER_INCH)/360;

@@ -41,12 +41,12 @@ public class ValueFinder extends SynchronousOpMode{
     private static final double LEFT_ZIP_DOWN = 0.216667;
     private static final double LOCK_ENGAGED = 1.0;
     private static final double LOCK_DISENGAGED = .178333;
-    private static final double SHELF_STOW_LEFT = .287;
-    private static final double SHELF_STOW_RIGHT = .713;
-    private static final double SHELF_DISPENSE_LEFT = .476333;
-    private static final double SHELF_DISPENSE_RIGHT = .523666;
+    private static final double SHELF_STOW_LEFT = .5;
+    private static final double SHELF_STOW_RIGHT = .75;
+    private static final double SHELF_DISPENSE_LEFT = .3713333;
+    private static final double SHELF_DISPENSE_RIGHT = .6286666;
     private static final double DISPENSER_NEUTRAL = 0.5;
-    private static final double DISPENSER_LEFT = 0.6693;
+    private static final double DISPENSER_LEFT = .593666;
     private static final double DISPENSER_RIGHT = 0.3577;
 
     //Motor Positions
