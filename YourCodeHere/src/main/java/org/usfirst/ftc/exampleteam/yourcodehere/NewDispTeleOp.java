@@ -70,6 +70,9 @@ public class NewDispTeleOp extends SynchronousOpMode {
     // defaults to blue alliance
     private boolean isBlue = false;
 
+    // boolean to keep track of what speed the drive motors are at
+    private boolean highSpeed = true;
+
     //tells whether triggers are in resting position or are down/active, starts at rest
     private boolean atRestTriggers = true;
 
@@ -107,11 +110,11 @@ public class NewDispTeleOp extends SynchronousOpMode {
     private static final double LOCK_DISENGAGED = .178333;
     private static final double SHELF_STOW_LEFT = .5;
     private static final double SHELF_STOW_RIGHT = .75;
-    private static final double SHELF_DISPENSE_LEFT = .538333;
-    private static final double SHELF_DISPENSE_RIGHT = .461667;
-    private static final double DISPENSER_NEUTRAL = 0.544667;
-    private static final double DISPENSER_LEFT = .611333;
-    private static final double DISPENSER_RIGHT = 0.476333;
+    private static final double SHELF_DISPENSE_LEFT = .4133;
+    private static final double SHELF_DISPENSE_RIGHT = .5867;
+    private static final double DISPENSER_NEUTRAL = .38567;
+    private static final double DISPENSER_LEFT = .31;
+    private static final double DISPENSER_RIGHT = 0.6423;
 
     private double pad1LeftStickX = 0;
     private double pad1LeftStickY = 0;
@@ -313,6 +316,14 @@ public class NewDispTeleOp extends SynchronousOpMode {
             isBlue = true;
         }
 
+        //toggle between high and low speed
+        if (gamepad1.dpad_left) {
+            highSpeed = false;
+        }
+        if (gamepad1.dpad_right) {
+            highSpeed = true;
+        }
+
 
         //starts and stops harvester
         if (gamepad1.x && !gamepad1.back) { //so it doesn't run when we try to change teams (uses x)
@@ -468,11 +479,22 @@ public class NewDispTeleOp extends SynchronousOpMode {
         //manually adjust the tilt of dispenser
         if (scaleInput(gamepad2.right_trigger) != 0 || scaleInput(gamepad2.left_trigger) != 0) {
             if (gamepad2.right_trigger > gamepad2.left_trigger) {
-                servoShuttle.setPosition(scaleInput(gamepad2.right_trigger/2) + .5);
+                servoShuttle.setPosition(-scaleInput(gamepad2.right_trigger/2) + .5);
             } else {
-                servoShuttle.setPosition(scaleInput(gamepad2.left_trigger/2) - .5);
+                servoShuttle.setPosition(scaleInput(gamepad2.left_trigger/2) + .5);
             }
         }
+        else
+        {
+            servoShuttle.setPosition(.5);
+        }
+
+        //Needs to run after all drive motor speed changes
+        if (!highSpeed) {
+            setLeftDrivePower(motorLeftAft.getPower() * .35);
+            setRightDrivePower(motorRightAft.getPower() * .35);
+        }
+
     }
 
 
@@ -603,27 +625,24 @@ public class NewDispTeleOp extends SynchronousOpMode {
     }
 
 
-    //Default Scale Input Method created by FTC- We will use this one until someone creates a better one.
-    //Used for scaling joysticks, basically is a floor function that is squared
     double scaleInput(double dVal) {
-        double[] scaleArray = {0.0, 0.05, 0.09, 0.10, 0.12, 0.15, 0.18, 0.24,
-                0.30, 0.36, 0.43, 0.50, 0.60, 0.72, 0.85, 1.00, 1.00};
+        if (dVal < .1 && dVal > -.1) {
+            return 0;
+        }
+        if (dVal < -.95) {
+            return -1;
+        }
+        if (dVal > .95) {
+            return 1;
+        }
 
-        // get the corresponding index for the scaleInput array.
-        int index = (int) (dVal * 16.0);
-        if (index < 0)
-            index = -index;
-        if (index > 16)
-            index = 16;
+        if (dVal > 0) {
+            return Math.pow(dVal, 2);
+        }
+        else {
+            return -Math.pow(dVal, 2);
+        }
 
-
-        double dScale;
-        if (dVal < 0)
-            dScale = -scaleArray[index];
-        else
-            dScale = scaleArray[index];
-
-        return dScale;
     }
 
     //This method is a combination of autonomous and manual controls
