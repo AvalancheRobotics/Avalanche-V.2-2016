@@ -258,7 +258,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
         servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
         servoLock.setPosition(LOCK_ENGAGED);
         servoTape.setPosition(.5);
-        servoShuttle.setPosition(.5);
+        servoShuttle.setPosition(.5); //!!!!!!!
 
         //motorTape is on opposite side on v2 so we need to reverse the motor
         motorTape.setDirection(DcMotor.Direction.REVERSE);

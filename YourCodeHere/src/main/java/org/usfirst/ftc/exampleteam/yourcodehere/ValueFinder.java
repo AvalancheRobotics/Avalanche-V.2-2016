@@ -43,11 +43,20 @@ public class ValueFinder extends SynchronousOpMode{
     private static final double LOCK_DISENGAGED = .178333;
     private static final double SHELF_STOW_LEFT = .5;
     private static final double SHELF_STOW_RIGHT = .75;
+<<<<<<< Updated upstream
     private static final double SHELF_DISPENSE_LEFT = .538333;
     private static final double SHELF_DISPENSE_RIGHT = .461667;
     private static final double DISPENSER_NEUTRAL = .637;
     private static final double DISPENSER_LEFT = .454;
     private static final double DISPENSER_RIGHT = 0.476333;
+=======
+    private static final double SHELF_DISPENSE_LEFT = .3713333;
+    private static final double SHELF_DISPENSE_RIGHT = .6286666;
+    private static final double DISPENSER_NEUTRAL = 0.5;
+    private static final double DISPENSER_LEFT = .593666;
+    private static final double DISPENSER_RIGHT = 0.3577;
+    private static final double SHUTTLE_NEUTRAL = 0.5;
+>>>>>>> Stashed changes
 
     //Motor Positions
     private double slideBotPosition = -2825;
@@ -75,6 +84,7 @@ public class ValueFinder extends SynchronousOpMode{
     DcMotor motorArm;
     DcMotor motorTape;
     Servo servoTapeAngle;
+    Servo servoShuttle;
 
     int toggle = 0;
     Servo currentServo = servoLock;
@@ -95,6 +105,7 @@ public class ValueFinder extends SynchronousOpMode{
         servoRightRamp = hardwareMap.servo.get("RightRamp");
         servoTilt = hardwareMap.servo.get("Tilt");
         servoTapeAngle = hardwareMap.servo.get("TapeAngle");
+        servoShuttle = hardwareMap.servo.get("Shuttle");
 
         servoTapeAngle.setPosition(.5);
         servoLock.setPosition(LOCK_DISENGAGED);
@@ -103,6 +114,7 @@ public class ValueFinder extends SynchronousOpMode{
         servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
         servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
         servoTilt.setPosition(DISPENSER_NEUTRAL);
+        servoShuttle.setPosition(SHUTTLE_NEUTRAL);
 
         // MOTORS
         motorArm = hardwareMap.dcMotor.get("Arm");
@@ -137,12 +149,12 @@ public class ValueFinder extends SynchronousOpMode{
                     toggle--;
                 }
 
-                if (toggle > 8) {
+                if (toggle > 9) {
                     toggle = 0;
                 }
 
                 if (toggle < 0) {
-                    toggle = 8;
+                    toggle = 9;
                 }
 
                 if (gamepad1.x) {
@@ -219,6 +231,12 @@ public class ValueFinder extends SynchronousOpMode{
                 servoTapeAngle.setPosition(.5 + (scaleInput(gamepad1.left_stick_y)));
                 currentServo = servoTapeAngle;
                 servoName = "servoTapeAngle";
+            }
+
+            if(toggle == 9){
+                servoShuttle.setPosition(.5 + (scaleInput(gamepad1.left_stick_y)));
+                currentServo = servoShuttle;
+                servoName = "servoShuttle";
             }
 
             if (currentServo != null) {
