@@ -40,15 +40,14 @@ import org.swerverobotics.library.interfaces.*;
  * setRightDrivePower(double power)
  */
 
-@Autonomous(name = "AutoBlue")
-public class Auto6253 extends SynchronousOpMode {
+@Autonomous(name = "AutoRed")
+public class AutoRed extends SynchronousOpMode {
     public static final double TICKS_PER_INCH = 133.7;
     public static final double TICKS_PER_DEGREE_DRIVE = (51.84 * TICKS_PER_INCH) / 360;
     public static final double TICKS_PER_DEGREE_ARM = ((24 / 16) * 1120) / 360;
     public static int offset;
     public static int drift;
     public static double startTime;
-
 
     //Servo Values
     private static final double RIGHT_ZIP_UP = 0.753;
@@ -59,11 +58,11 @@ public class Auto6253 extends SynchronousOpMode {
     private static final double LOCK_DISENGAGED = .178333;
     private static final double SHELF_STOW_LEFT = .5;
     private static final double SHELF_STOW_RIGHT = .75;
-    private static final double SHELF_DISPENSE_LEFT = .4133;
-    private static final double SHELF_DISPENSE_RIGHT = .5867;
-    private static final double DISPENSER_NEUTRAL = .38567;
-    private static final double DISPENSER_LEFT = .31;
-    private static final double DISPENSER_RIGHT = 0.6423;
+    private static final double SHELF_DISPENSE_LEFT = .538333;
+    private static final double SHELF_DISPENSE_RIGHT = .461667;
+    private static final double DISPENSER_NEUTRAL = 0.544667;
+    private static final double DISPENSER_LEFT = .611333;
+    private static final double DISPENSER_RIGHT = 0.476333;
 
     // Declare drive motors
     DcMotor motorLeftFore;
@@ -99,7 +98,6 @@ public class Auto6253 extends SynchronousOpMode {
     Servo servoRightRamp;
 
     Servo servoLock;
-    Servo servoShuttle;
 
     // Declare sensors
     //  GyroSensor gyro;
@@ -153,9 +151,6 @@ public class Auto6253 extends SynchronousOpMode {
 
         servoLock = hardwareMap.servo.get("Lock");
         servoLock.setPosition(LOCK_DISENGAGED);
-        servoShuttle = hardwareMap.servo.get("Shuttle");
-        servoShuttle.setPosition(.5);
-        servoTape.setPosition(.5);
 
 
 
@@ -184,7 +179,7 @@ public class Auto6253 extends SynchronousOpMode {
         startTime = System.nanoTime();
 
 
-        boolean blue = true;
+        boolean blue = false;
         v2AutoSquare(blue);
 
     }
@@ -260,15 +255,14 @@ public class Auto6253 extends SynchronousOpMode {
         moveForward(0.6, -3);
         extendSlides();
         if(blue)
-            pivot(0.3, 26);
+            pivot(0.4, 8);
         else
-            pivot(0.3, -26);
-        Thread.sleep(1000);
+            pivot(0.4, -8);
         releaseClimbers(blue);
         if(blue)
-            pivot(0.4, -26);
+            pivot(0.4, -8);
         else
-            pivot(0.4, 26);
+            pivot(0.4, 8);
         retractSlides();
         if(blue)
             pivot(0.4, -63);
@@ -528,7 +522,7 @@ public class Auto6253 extends SynchronousOpMode {
     }
 
     public void extendSlides() throws InterruptedException {
-        int distance = -5930;
+        int distance = -5300;
         double power = 1;
 
         motorSlide.setTargetPosition(motorSlide.getCurrentPosition() + distance);
@@ -543,7 +537,7 @@ public class Auto6253 extends SynchronousOpMode {
     }
 
     public void retractSlides() throws InterruptedException {
-        int distance = 5930;
+        int distance = 5300;
         double power = 1;
 
         servoRightRamp.setPosition(SHELF_STOW_RIGHT);
@@ -562,12 +556,12 @@ public class Auto6253 extends SynchronousOpMode {
 
     public void releaseClimbers(boolean left) throws InterruptedException {
         if (left) {
-            servoTilt.setPosition(DISPENSER_RIGHT);
+            servoTilt.setPosition(0);
             Thread.sleep(2000);
             servoTilt.setPosition(DISPENSER_NEUTRAL);
             Thread.sleep(1000);
         } else {
-            servoTilt.setPosition(DISPENSER_LEFT);
+            servoTilt.setPosition(1);
             Thread.sleep(2000);
             servoTilt.setPosition(DISPENSER_NEUTRAL);
             Thread.sleep(1000);

@@ -239,7 +239,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
 
         armInitPosition = startPosArm + -2335;
         armHarvestPosition = startPosArm + 0;
-        armDispensePosition = startPosArm + -1650;
+        armDispensePosition = startPosArm + -2325; //-1650; old position for using ramp to dump.
         armMountainPosition = startPosArm + -300; //-1965- old position, new one prevents tipping
         armDescendPosition = startPosArm + -1000;
 
@@ -453,7 +453,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
             startPosArm = motorArm.getCurrentPosition();
             armInitPosition = startPosArm + -2335;
             armHarvestPosition = startPosArm + 0;
-            armDispensePosition = startPosArm + -1650;
+            armDispensePosition = startPosArm + -2330;//-1650; Old shelf value
             armMountainPosition = startPosArm + -300; //-1965- old position, new one prevents tipping
             armDescendPosition = startPosArm + -1000;
         }
@@ -488,6 +488,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
         {
             servoShuttle.setPosition(.5);
         }
+        telemetry.addData("Shuttle Speed", servoShuttle.getPosition());
 
         //Needs to run after all drive motor speed changes
         if (!highSpeed) {
