@@ -64,6 +64,7 @@ public class AutoMakerInches extends SynchronousOpMode {
     Servo servoRightRamp;
     Servo servoTilt;
     Servo servoTapeAngle;
+    Servo servoShuttle;
     DcMotor motorLeftFore;
     DcMotor motorRightFore;
     DcMotor motorLeftAft;
@@ -86,9 +87,11 @@ public class AutoMakerInches extends SynchronousOpMode {
         motorRightAft = hardwareMap.dcMotor.get("RightAft");
         motorRightFore = hardwareMap.dcMotor.get("RightFore");
         motorSlide = hardwareMap.dcMotor.get("Slide");
+        servoShuttle = hardwareMap.servo.get("Shuttle");
 
 
         servoTapeAngle.setPosition(.5);
+        servoShuttle.setPosition(.5);
         servoLock.setPosition(LOCK_DISENGAGED);
         servoLeftZip.setPosition(LEFT_ZIP_UP);
         servoRightZip.setPosition(RIGHT_ZIP_UP);

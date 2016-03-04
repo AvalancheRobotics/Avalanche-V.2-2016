@@ -40,8 +40,8 @@ import org.swerverobotics.library.interfaces.TeleOp;
  * HAPPEN
  */
 
-@TeleOp(name = "NewDispTeleOp")
-public class NewDispTeleOp extends SynchronousOpMode {
+@TeleOp(name = "TeleOp")
+public class TeleOp6253 extends SynchronousOpMode {
 
     //Enums
 
@@ -115,20 +115,6 @@ public class NewDispTeleOp extends SynchronousOpMode {
     private static final double DISPENSER_NEUTRAL = .38567;
     private static final double DISPENSER_LEFT = .31;
     private static final double DISPENSER_RIGHT = 0.6423;
-
-    private double pad1LeftStickX = 0;
-    private double pad1LeftStickY = 0;
-    private double pad1RightStickX = 0;
-    private double pad1RightStickY = 0;
-    private double pad2LeftStickX = 0;
-    private double pad2LeftStickY = 0;
-    private double pad2RightStickX = 0;
-    private double pad2RightStickY = 0;
-    private double pad1LeftTrigger = 0;
-    private double pad1RightTrigger = 0;
-    private double pad2LeftTrigger = 0;
-    private double pad2RightTrigger = 0;
-    private float disconnectTimer = 0;
 
     // Declare drive motors
     DcMotor motorLeftFore;
@@ -239,7 +225,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
 
         armInitPosition = startPosArm + -2335;
         armHarvestPosition = startPosArm + 0;
-        armDispensePosition = startPosArm + -2325; //-1650; old position for using ramp to dump.
+        armDispensePosition = startPosArm + -2330; //-1650; old position for using ramp to dump.
         armMountainPosition = startPosArm + -300; //-1965- old position, new one prevents tipping
         armDescendPosition = startPosArm + -1000;
 
@@ -258,7 +244,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
         servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
         servoLock.setPosition(LOCK_ENGAGED);
         servoTape.setPosition(.5);
-        servoShuttle.setPosition(.5); //!!!!!!!
+        servoShuttle.setPosition(.5);
 
         //motorTape is on opposite side on v2 so we need to reverse the motor
         motorTape.setDirection(DcMotor.Direction.REVERSE);
@@ -479,9 +465,9 @@ public class NewDispTeleOp extends SynchronousOpMode {
         //manually adjust the tilt of dispenser
         if (scaleInput(gamepad2.right_trigger) != 0 || scaleInput(gamepad2.left_trigger) != 0) {
             if (gamepad2.right_trigger > gamepad2.left_trigger) {
-                servoShuttle.setPosition(-scaleInput(gamepad2.right_trigger/2) + .5);
+                servoShuttle.setPosition(-scaleInput(gamepad2.right_trigger)/2 + .5);
             } else {
-                servoShuttle.setPosition(scaleInput(gamepad2.left_trigger/2) + .5);
+                servoShuttle.setPosition(scaleInput(gamepad2.left_trigger)/2 + .5);
             }
         }
         else
@@ -489,6 +475,7 @@ public class NewDispTeleOp extends SynchronousOpMode {
             servoShuttle.setPosition(.5);
         }
         telemetry.addData("Shuttle Speed", servoShuttle.getPosition());
+        telemetry.update();
 
         //Needs to run after all drive motor speed changes
         if (!highSpeed) {
@@ -855,48 +842,5 @@ public class NewDispTeleOp extends SynchronousOpMode {
             motorHarvest.setPower(HARVEST_SPEED);
             runningLoadDispenser = false;
         }
-    }
-
-    //drive controls that stops drive motors if we disconnect - Doesn't work due to what happens during a disconnect
-    //we think during a disconnect the control part of a CPDM stops regulating the power therefore this code is useless in preventing disconnects.
-    //However, it can prevent our robot from moving in event of a controller disconnect.
-    private void disconnectStopDrive() {
-        if (
-                pad1LeftStickX == gamepad1.left_stick_x
-                        && pad1LeftStickY == gamepad1.left_stick_y
-                        && pad1LeftTrigger == gamepad1.left_trigger
-                        && pad1RightStickX == gamepad1.right_stick_x
-                        && pad1RightStickY == gamepad1.right_stick_y
-                        && pad1RightTrigger == gamepad1.right_trigger
-                        && pad2LeftStickX == gamepad2.left_stick_x
-                        && pad2LeftStickY == gamepad2.left_stick_y
-                        && pad2LeftTrigger == gamepad2.left_trigger
-                        && pad2RightStickX == gamepad2.right_stick_x
-                        && pad2RightStickY == gamepad2.right_stick_y
-                        && pad2RightTrigger == gamepad2.right_trigger
-                ) {
-            if (System.currentTimeMillis() - disconnectTimer > 2000) {
-                if (!motorLeftAft.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
-                    setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
-                }
-                setRightDrivePower(1);
-                setLeftDrivePower(1);
-            }
-        } else {
-            disconnectTimer = System.currentTimeMillis();
-            manualDriveControls(true);
-        }
-
-        pad1LeftStickY = gamepad1.left_stick_y;
-        pad1LeftTrigger = gamepad1.left_trigger;
-        pad1RightStickX = gamepad1.right_stick_x;
-        pad1RightStickY = gamepad1.right_stick_y;
-        pad1RightTrigger = gamepad1.right_trigger;
-        pad2LeftStickX = gamepad2.left_stick_x;
-        pad2LeftStickY = gamepad2.left_stick_y;
-        pad2LeftTrigger = gamepad2.left_trigger;
-        pad2RightStickX = gamepad2.right_stick_x;
-        pad2RightStickY = gamepad2.right_stick_y;
-        pad2RightTrigger = gamepad2.right_trigger;
     }
 }

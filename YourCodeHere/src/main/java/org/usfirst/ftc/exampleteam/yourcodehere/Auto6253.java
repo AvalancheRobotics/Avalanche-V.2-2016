@@ -258,6 +258,7 @@ public class Auto6253 extends SynchronousOpMode {
         else
             pivot(0.4, -209);
         moveForward(0.6, -3);
+        motorHarvest.setPower(0);
         extendSlides();
         if(blue)
             pivot(0.3, 26);
@@ -270,21 +271,22 @@ public class Auto6253 extends SynchronousOpMode {
         else
             pivot(0.4, 26);
         retractSlides();
+        motorHarvest.setPower(-1);
         if(blue)
-            pivot(0.4, -63);
+            pivot(0.6, -63);
         else
-            pivot(0.4, 63);
-        moveForward(0.6, 21);
+            pivot(0.6, 63);
+        moveForward(0.9, 21);
         if(blue)
-            pivot(0.4, 18);
+            pivot(0.6, 18);
         else
-            pivot(0.4, -18);
-        moveForward(0.6, 18);
+            pivot(0.6, -18);
+        moveForward(0.9, 18);
         if(blue)
-            pivot(0.4, 110);
+            pivot(0.6, 110);
         else
-            pivot(0.4, -110);
-        moveForward(0.6, -16);
+            pivot(0.6, -110);
+        moveForward(0.9, -16);
         motorHarvest.setPower(0);
     }
 
@@ -565,12 +567,10 @@ public class Auto6253 extends SynchronousOpMode {
             servoTilt.setPosition(DISPENSER_RIGHT);
             Thread.sleep(2000);
             servoTilt.setPosition(DISPENSER_NEUTRAL);
-            Thread.sleep(1000);
         } else {
             servoTilt.setPosition(DISPENSER_LEFT);
             Thread.sleep(2000);
             servoTilt.setPosition(DISPENSER_NEUTRAL);
-            Thread.sleep(1000);
         }
     }
 
