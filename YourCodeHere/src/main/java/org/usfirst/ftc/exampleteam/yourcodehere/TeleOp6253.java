@@ -102,18 +102,18 @@ public class TeleOp6253 extends SynchronousOpMode {
     //length which tape extends to to hang
 
     //Servo Values
-    private static final double RIGHT_ZIP_UP = 0.753;
+    private static final double RIGHT_ZIP_UP = .7956;
     private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = 0.293;
-    private static final double LEFT_ZIP_DOWN = 0.216667;
+    private static final double LEFT_ZIP_UP = .0657;
+    private static final double LEFT_ZIP_DOWN = .7387;
     private static final double LOCK_ENGAGED = 1.0;
-    private static final double LOCK_DISENGAGED = .178333;
+    private static final double LOCK_DISENGAGED = .57;
     private static final double SHELF_STOW_LEFT = .5;
     private static final double SHELF_STOW_RIGHT = .75;
     private static final double SHELF_DISPENSE_LEFT = .4133;
     private static final double SHELF_DISPENSE_RIGHT = .5867;
     private static final double DISPENSER_NEUTRAL = .38567;
-    private static final double DISPENSER_LEFT = .31;
+    private static final double DISPENSER_LEFT = .113;
     private static final double DISPENSER_RIGHT = 0.6423;
 
     // Declare drive motors
@@ -291,7 +291,7 @@ public class TeleOp6253 extends SynchronousOpMode {
 
     private void manualMethods() {
         //Toggle Team (if we need to score on an opponent's ramp)
-        if ((gamepad1.back && gamepad1.b) || (gamepad2.back && gamepad2.b)) {
+        if ((gamepad1.back && gamepad1.b && !gamepad1.start) || (gamepad2.back && gamepad2.b && !gamepad2.start)) {
             telemetry.addData("team: ", "red");
             telemetry.update();
             isBlue = false;
@@ -365,11 +365,11 @@ public class TeleOp6253 extends SynchronousOpMode {
             servoTilt.setPosition(DISPENSER_LEFT);
         }
 
-        if (gamepad2.b && !gamepad2.back) {
+        if (gamepad2.b && !gamepad2.back && !gamepad2.start) {
             servoTilt.setPosition(DISPENSER_RIGHT);
         }
 
-        if (gamepad2.a) {
+        if (gamepad2.a && !gamepad1.start) {
             servoTilt.setPosition(DISPENSER_NEUTRAL);
         }
 
@@ -408,7 +408,7 @@ public class TeleOp6253 extends SynchronousOpMode {
         startHarvest(gamepad2.right_bumper);
 
         // auto tape extend
-        if (gamepad1.a || gamepad1.y) {
+        if ((gamepad1.a && !gamepad1.start) || gamepad1.y) {
 
             if (!runningAutoSlide) {
                 if (gamepad1.a) {
@@ -474,8 +474,6 @@ public class TeleOp6253 extends SynchronousOpMode {
         {
             servoShuttle.setPosition(.5);
         }
-        telemetry.addData("Shuttle Speed", servoShuttle.getPosition());
-        telemetry.update();
 
         //Needs to run after all drive motor speed changes
         if (!highSpeed) {
@@ -547,12 +545,12 @@ public class TeleOp6253 extends SynchronousOpMode {
 
     private void triggerZipline() {
         if (isBlue) {
-            if (atRestTriggers)
+            if (!atRestTriggers)
                 servoRightZip.setPosition(RIGHT_ZIP_UP); //Needs resting and active servo positions
             else
                 servoRightZip.setPosition(RIGHT_ZIP_DOWN);
         } else {
-            if (atRestTriggers)
+            if (!atRestTriggers)
                 servoLeftZip.setPosition(LEFT_ZIP_UP);
             else
                 servoLeftZip.setPosition(LEFT_ZIP_DOWN);

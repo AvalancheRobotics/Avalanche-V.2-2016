@@ -51,18 +51,18 @@ public class Auto6253 extends SynchronousOpMode {
 
 
     //Servo Values
-    private static final double RIGHT_ZIP_UP = 0.753;
+    private static final double RIGHT_ZIP_UP = .7956;
     private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = 0.293;
-    private static final double LEFT_ZIP_DOWN = 0.216667;
+    private static final double LEFT_ZIP_UP = .0657;
+    private static final double LEFT_ZIP_DOWN = .7387;
     private static final double LOCK_ENGAGED = 1.0;
-    private static final double LOCK_DISENGAGED = .178333;
+    private static final double LOCK_DISENGAGED = .57;
     private static final double SHELF_STOW_LEFT = .5;
     private static final double SHELF_STOW_RIGHT = .75;
     private static final double SHELF_DISPENSE_LEFT = .4133;
     private static final double SHELF_DISPENSE_RIGHT = .5867;
     private static final double DISPENSER_NEUTRAL = .38567;
-    private static final double DISPENSER_LEFT = .31;
+    private static final double DISPENSER_LEFT = .113;
     private static final double DISPENSER_RIGHT = 0.6423;
 
     // Declare drive motors
@@ -530,7 +530,7 @@ public class Auto6253 extends SynchronousOpMode {
     }
 
     public void extendSlides() throws InterruptedException {
-        int distance = -5930;
+        int distance = -5850;
         double power = 1;
 
         motorSlide.setTargetPosition(motorSlide.getCurrentPosition() + distance);
@@ -545,7 +545,7 @@ public class Auto6253 extends SynchronousOpMode {
     }
 
     public void retractSlides() throws InterruptedException {
-        int distance = 5930;
+        int distance = 5850;
         double power = 1;
 
         servoRightRamp.setPosition(SHELF_STOW_RIGHT);
