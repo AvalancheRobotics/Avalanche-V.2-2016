@@ -8,24 +8,25 @@ import org.usfirst.ftc.exampleteam.yourcodehere.Height;
 /**
  * Class for controlling linear slides
  * Call manualSlide in a recursive loop, updating the input
- * call Retract slides to retract slides to the starting position
+ * Call retractSlides to retract slides to the starting position
+ * Call extendSlides to extend slides to a specified length
  */
-public class LinearSlides {
+public class LinearSlideController {
     DcMotor motor;
     private boolean runningAutoRetract = false;
 
-    public LinearSlides(DcMotor slideMotor) {
+    public LinearSlideController(DcMotor slideMotor) {
         motor = slideMotor;
         motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
     }
 
-    public void retractSlides(Position startPosition) {
-            if (!motor.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
-                motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-            }
-            motor.setPower(1);
-            motor.setTargetPosition(startPosition.getValue());
-            runningAutoRetract = true;
+    public void retractSlides(int startPosition) {
+        if (!motor.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+            motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+        }
+        motor.setPower(1);
+        motor.setTargetPosition(startPosition);
+        runningAutoRetract = true;
     }
 
     //Stops any auto methods using slides and manually controls power with joysticks
@@ -51,10 +52,10 @@ public class LinearSlides {
         }
     }
 
-    private void extendSlide(Position position) {
+    public void extendSlide(int position) {
         motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
         motor.setPower(1);
-        motor.setTargetPosition(position.getValue());
+        motor.setTargetPosition(position);
     }
 
 }

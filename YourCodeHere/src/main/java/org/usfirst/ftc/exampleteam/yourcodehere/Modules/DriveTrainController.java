@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * Use setDriveMode to change controls between tank and arcade (defaults to tank)
  * */
 
-public class DriveTrain {
+public class DriveTrainController {
 
     ArrayList<DcMotor> motors = new ArrayList<>();
     boolean usingTankDrive;
@@ -22,21 +22,30 @@ public class DriveTrain {
 
     //Constructors
 
-    public DriveTrain(DcMotor leftBack, DcMotor rightBack, DcMotor leftFront, DcMotor rightFront) {
+    public DriveTrainController(DcMotor leftBack, DcMotor rightBack, DcMotor leftFront, DcMotor rightFront) {
         DcMotor motor;
         motors.add(leftBack);
         motors.add(rightBack);
         motors.add(leftFront);
         motors.add(rightFront);
+
+        //Reverse left motors because gearing is flipped
+        motors.get(0).setDirection(DcMotor.Direction.REVERSE);
+        motors.get(2).setDirection(DcMotor.Direction.REVERSE);
+
         usingTankDrive = true;
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
         }
     }
 
-    public DriveTrain(DcMotor left, DcMotor right) {
+    public DriveTrainController(DcMotor left, DcMotor right) {
         motors.add(left);
         motors.add(right);
+
+        //Reverse left motor because gearing is flipped
+        motors.get(0).setDirection(DcMotor.Direction.REVERSE);
+
         usingTankDrive = true;
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
@@ -84,13 +93,23 @@ public class DriveTrain {
     }
 
     public void setLeftDrivePower(double power) {
-        motors.get(0).setPower(power);
-        motors.get(2).setPower(power);
+        if (motors.size() > 2) {
+            motors.get(0).setPower(power);
+            motors.get(2).setPower(power);
+        }
+        else {
+            motors.get(0).setPower(power);
+        }
     }
 
     public void setRightDrivePower(double power) {
-        motors.get(1).setPower(power);
-        motors.get(3).setPower(power);
+        if (motors.size() > 2) {
+            motors.get(1).setPower(power);
+            motors.get(3).setPower(power);
+        }
+        else {
+            motors.get(1).setPower(power);
+        }
     }
 
 }

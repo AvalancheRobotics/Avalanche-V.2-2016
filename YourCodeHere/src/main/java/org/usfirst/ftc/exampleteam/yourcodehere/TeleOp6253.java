@@ -6,10 +6,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
+import org.usfirst.ftc.exampleteam.yourcodehere.Modules.ScaleInput;
 /**
  * TO DO LIST:
  * Debug and Test.
- *
+ * <p>
  * Version 2.2 of Team Avalanche 6253's TeleOp program for Robot version 2.0.
  * UNLIKE NORMAL TELEOP, USES FTC'S BUILT IN MOVE_TO_POSITION which causes the motor to move more slowly but is also more accurate and easier to code than custom PID
  */
@@ -320,8 +321,7 @@ public class TeleOp6253 extends SynchronousOpMode {
         if (gamepad1.left_bumper)
             if (motorHarvest.getPower() == -HARVEST_SPEED) {
                 motorHarvest.setPower(0);
-            }
-            else {
+            } else {
                 motorHarvest.setPower(-HARVEST_SPEED);
             }
 
@@ -335,19 +335,18 @@ public class TeleOp6253 extends SynchronousOpMode {
 
 
         //Stops any auto methods using slides and manually controls power with joysticks
-        if (scaleInput(gamepad2.left_stick_y) != 0) { //Threshold so you don't accidentally start running the slides manually
+        if (ScaleInput.scale(gamepad2.left_stick_y) != 0) { //Threshold so you don't accidentally start running the slides manually
             if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
                 motorSlide.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 runningAutoRetract = false;
             }
-            motorSlide.setPower(scaleInput(gamepad2.left_stick_y));
+            motorSlide.setPower(ScaleInput.scale(gamepad2.left_stick_y));
         } else {
             if (runningAutoRetract) {
                 if (motorSlide.getCurrentPosition() >= motorSlide.getTargetPosition() - 20 && motorSlide.getCurrentPosition() <= motorSlide.getTargetPosition() + 20) {
                     runningAutoRetract = false;
                 }
-            }
-            else {
+            } else {
                 if (!motorSlide.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
                     motorSlide.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
                     motorSlide.setPower(.5);
@@ -357,7 +356,7 @@ public class TeleOp6253 extends SynchronousOpMode {
         }
 
         //adjust angle of tape
-        servoTape.setPosition(-scaleInput(gamepad2.right_stick_y / 3) + .5);
+        servoTape.setPosition(-ScaleInput.scale(gamepad2.right_stick_y / 3) + .5);
 
         //auto positions for tilt
 
@@ -463,15 +462,13 @@ public class TeleOp6253 extends SynchronousOpMode {
 
         //manual controls but needs to be run every time
         //manually adjust the tilt of dispenser
-        if (scaleInput(gamepad2.right_trigger) != 0 || scaleInput(gamepad2.left_trigger) != 0) {
+        if (ScaleInput.scale(gamepad2.right_trigger) != 0 || ScaleInput.scale(gamepad2.left_trigger) != 0) {
             if (gamepad2.right_trigger > gamepad2.left_trigger) {
-                servoShuttle.setPosition(-scaleInput(gamepad2.right_trigger)/2 + .5);
+                servoShuttle.setPosition(-ScaleInput.scale(gamepad2.right_trigger) / 2 + .5);
             } else {
-                servoShuttle.setPosition(scaleInput(gamepad2.left_trigger)/2 + .5);
+                servoShuttle.setPosition(ScaleInput.scale(gamepad2.left_trigger) / 2 + .5);
             }
-        }
-        else
-        {
+        } else {
             servoShuttle.setPosition(.5);
         }
 
@@ -610,27 +607,6 @@ public class TeleOp6253 extends SynchronousOpMode {
         motorLeftAft.setPower(power);
     }
 
-
-    double scaleInput(double dVal) {
-        if (dVal < .1 && dVal > -.1) {
-            return 0;
-        }
-        if (dVal < -.95) {
-            return -1;
-        }
-        if (dVal > .95) {
-            return 1;
-        }
-
-        if (dVal > 0) {
-            return Math.pow(dVal, 2);
-        }
-        else {
-            return -Math.pow(dVal, 2);
-        }
-
-    }
-
     //This method is a combination of autonomous and manual controls
     //Certain actions such as the conveyor run on button prompts while
     //Other automated actions such as shuttling run on their own
@@ -739,7 +715,7 @@ public class TeleOp6253 extends SynchronousOpMode {
   */
     private void manualDriveControls(boolean usingTankDrive) {
         if (usingTankDrive) { //tank drive
-            if (scaleInput(gamepad1.left_stick_y) == 0 && scaleInput(gamepad1.right_stick_y) == 0 && gamepad1.right_trigger < .7 && gamepad1.left_trigger < .9) {
+            if (ScaleInput.scale(gamepad1.left_stick_y) == 0 && ScaleInput.scale(gamepad1.right_stick_y) == 0 && gamepad1.right_trigger < .7 && gamepad1.left_trigger < .9) {
                 if (motorLeftAft.getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
                     setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
                     motorRightAft.setTargetPosition(motorRightAft.getCurrentPosition());
@@ -770,7 +746,7 @@ public class TeleOp6253 extends SynchronousOpMode {
                     }
 
                 } else {
-                    setLeftDrivePower(scaleInput(gamepad1.left_stick_y));
+                    setLeftDrivePower(ScaleInput.scale(gamepad1.left_stick_y));
                 }
 
                 if (gamepad1.right_trigger > .7 || gamepad1.left_trigger > .7) {
@@ -779,7 +755,7 @@ public class TeleOp6253 extends SynchronousOpMode {
                         setAftPower(CONSTANT_UP_SPEED);
                     }
                 } else {
-                    setRightDrivePower(scaleInput(gamepad1.right_stick_y));
+                    setRightDrivePower(ScaleInput.scale(gamepad1.right_stick_y));
                 }
             }
 
@@ -795,8 +771,8 @@ public class TeleOp6253 extends SynchronousOpMode {
                     setRightDrivePower(-CONSTANT_UP_SPEED);
                 }
             } else {
-                setLeftDrivePower(scaleInput(gamepad1.left_stick_y) + scaleInput(gamepad1.right_stick_x));
-                setRightDrivePower(scaleInput(gamepad1.left_stick_y) - scaleInput(gamepad1.right_stick_x));
+                setLeftDrivePower(ScaleInput.scale(gamepad1.left_stick_y) + ScaleInput.scale(gamepad1.right_stick_x));
+                setRightDrivePower(ScaleInput.scale(gamepad1.left_stick_y) - ScaleInput.scale(gamepad1.right_stick_x));
             }
         }
     }
