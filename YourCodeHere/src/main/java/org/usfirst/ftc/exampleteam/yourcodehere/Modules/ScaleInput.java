@@ -4,7 +4,7 @@ package org.usfirst.ftc.exampleteam.yourcodehere.Modules;
  * Created by Austin on 6/3/2016.
  */
 public class ScaleInput {
-    public static double scale(double dVal) {
+    public static float scale(double dVal) {
             if (dVal < .1 && dVal > -.1) {
                 return 0;
             }
@@ -16,10 +16,10 @@ public class ScaleInput {
             }
 
             if (dVal > 0) {
-                return Math.pow(dVal, 2);
+                return (float) Math.pow(dVal, 2);
             }
             else {
-                return -Math.pow(dVal, 2);
+                return (float) -Math.pow(dVal, 2);
             }
 
     }

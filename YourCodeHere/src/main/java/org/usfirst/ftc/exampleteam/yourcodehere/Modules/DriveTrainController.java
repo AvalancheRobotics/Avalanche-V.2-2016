@@ -16,8 +16,8 @@ import java.util.ArrayList;
 
 public class DriveTrainController {
 
-    ArrayList<DcMotor> motors = new ArrayList<>();
-    boolean usingTankDrive;
+    private ArrayList<DcMotor> motors = new ArrayList<>();
+    private boolean usingTankDrive;
 
 
     //Constructors
@@ -52,7 +52,7 @@ public class DriveTrainController {
         }
     }
 
-    public void setDriveMode(boolean tankDrive) {
+    public void setControlMode(boolean tankDrive) {
         usingTankDrive = tankDrive;
     }
 
@@ -110,6 +110,70 @@ public class DriveTrainController {
         else {
             motors.get(1).setPower(power);
         }
+    }
+
+    public void resetEncoders() {
+        for (int i = 0; i < motors.size(); i++) {
+            motors.get(i).setMode(DcMotorController.RunMode.RESET_ENCODERS);
+            motors.get(i).setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        }
+    }
+
+    public int getEncoderValue(int index) {
+        return motors.get(index).getCurrentPosition();
+    }
+
+    public int getAverageEncoderValue() { //returns average of back wheels
+        int total = 0;
+        for (int i = 0; i < 2; i++) {
+            total = total + motors.get(i).getCurrentPosition();
+        }
+        return total / 2;
+    }
+
+    public int getAverageEncoderValueLeft() {
+            return (motors.get(0).getCurrentPosition());
+    }
+
+    public int getAverageEncoderValueRight() {
+            return (motors.get(1).getCurrentPosition());
+    }
+
+    public ArrayList<DcMotor> getMotors() {
+        return motors;
+    }
+
+    public boolean isBusy() {
+        boolean busy = false;
+        for (int i = 0; i < motors.size(); i++) {
+            if (motors.get(i).isBusy()) {
+                busy = true;
+            }
+        }
+
+        return busy;
+    }
+
+    public ArrayList<DcMotor> getRightMotors() {
+        ArrayList<DcMotor> rightMotors = new ArrayList<DcMotor>();
+
+        rightMotors.add(motors.get(1));
+
+        if (motors.size() > 2) {
+            rightMotors.add(motors.get(3));
+        }
+        return rightMotors;
+    }
+
+    public ArrayList<DcMotor> getLeftMotors() {
+        ArrayList<DcMotor> leftMotors = new ArrayList<DcMotor>();
+
+        leftMotors.add(motors.get(0));
+
+        if (motors.size() > 2) {
+            leftMotors.add(motors.get(2));
+        }
+        return leftMotors;
     }
 
 }
