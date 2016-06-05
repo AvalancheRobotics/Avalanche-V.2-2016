@@ -85,10 +85,7 @@ public class AutoMaker extends SynchronousOpMode {
 
     @Override
     public void main() throws InterruptedException {
-
-        //Deletes Previous Auto Operation
-        MyApplication.getContext().deleteFile("auto.txt");
-
+        
         try {
             outputStreamWriter = new OutputStreamWriter(MyApplication.getContext().openFileOutput("auto.txt", Context.MODE_PRIVATE));
         }
