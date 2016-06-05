@@ -26,42 +26,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
+import org.usfirst.ftc.exampleteam.yourcodehere.Modules.ValueStore;
 
 @TeleOp(name = "Value Finder")
 public class ValueFinder extends SynchronousOpMode{
-
-    /** Keep Track Of Assigned Values Here**/
-
-    private static final int ARBITRARYVALUE = 0;
-
-    //Servo Values
-    private static final double RIGHT_ZIP_UP = 0.753;
-    private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = 0.293;
-    private static final double LEFT_ZIP_DOWN = 0.216667;
-    private static final double LOCK_ENGAGED = 1.0;
-    private static final double LOCK_DISENGAGED = .178333;
-    private static final double SHELF_STOW_LEFT = .5;
-    private static final double SHELF_STOW_RIGHT = .75;
-    private static final double SHELF_DISPENSE_LEFT = .4133;
-    private static final double SHELF_DISPENSE_RIGHT = .5867;
-    private static final double DISPENSER_NEUTRAL = .38567;
-    private static final double DISPENSER_LEFT = .31;
-    private static final double DISPENSER_RIGHT = 0.6423;
-
-    //Motor Positions
-    private double slideBotPosition = -2825;
-    private double slideMidPosition = -2188;
-    private double slideTopPosition = -7600;
-    private int armInitPosition = -2330;
-    private int armHarvestPosition = 0;
-    private int armDispensePosition = -1737;
-    private int armMountainPosition = -238;
-    //farthest slide can extend without damage (soft stop)
-    //private int maxSlideLength = ARBITRARYVALUE;
-    //length which tape extends to to hang
-    //private int hangLength = ARBITRARYVALUE;
-
 
 
     //Declare Servos
@@ -99,12 +67,12 @@ public class ValueFinder extends SynchronousOpMode{
         servoShuttle = hardwareMap.servo.get("Shuttle");
 
         servoTapeAngle.setPosition(.5);
-        servoLock.setPosition(LOCK_DISENGAGED);
-        servoLeftZip.setPosition(LEFT_ZIP_UP);
-        servoRightZip.setPosition(RIGHT_ZIP_UP);
-        servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
-        servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
-        servoTilt.setPosition(DISPENSER_NEUTRAL);
+        servoLock.setPosition(ValueStore.LOCK_DISENGAGED);
+        servoLeftZip.setPosition(ValueStore.LEFT_ZIP_UP);
+        servoRightZip.setPosition(ValueStore.RIGHT_ZIP_UP);
+        servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
+        servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
+        servoTilt.setPosition(ValueStore.DISPENSER_NEUTRAL);
         servoShuttle.setPosition(.5);
 
         // MOTORS

@@ -44,7 +44,7 @@ import org.swerverobotics.library.interfaces.*;
 public class Auto6253 extends SynchronousOpMode {
     public static final double TICKS_PER_INCH = 133.7;
     public static final double TICKS_PER_DEGREE_DRIVE = (51.84 * TICKS_PER_INCH) / 360;
-    public static final double TICKS_PER_DEGREE_ARM = ((24 / 16) * 1120) / 360;
+    public static final double TICKS_PER_DEGREE_ARM = ((24d / 16) * 1120) / 360;
     public static int offset;
     public static int drift;
     public static double startTime;

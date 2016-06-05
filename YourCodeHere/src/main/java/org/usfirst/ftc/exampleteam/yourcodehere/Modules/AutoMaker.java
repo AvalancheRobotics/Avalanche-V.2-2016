@@ -58,7 +58,6 @@ public class AutoMaker extends SynchronousOpMode {
     DcMotor motorRightFore;
     DcMotor motorLeftAft;
     DcMotor motorRightAft;
-    DcMotor motorSlide;
     DriveTrainController driveTrain;
 
     boolean drivingStraight;

@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
 import org.usfirst.ftc.exampleteam.yourcodehere.Modules.ScaleInput;
+import org.usfirst.ftc.exampleteam.yourcodehere.Modules.ValueStore;
 /**
  * TO DO LIST:
  * Debug and Test.
@@ -102,20 +103,6 @@ public class TeleOp6253 extends SynchronousOpMode {
     private int maxSlideLength = 7659876; //ARBITRARY
     //length which tape extends to to hang
 
-    //Servo Values
-    private static final double RIGHT_ZIP_UP = .7956;
-    private static final double RIGHT_ZIP_DOWN = 0;
-    private static final double LEFT_ZIP_UP = .0657;
-    private static final double LEFT_ZIP_DOWN = .7387;
-    private static final double LOCK_ENGAGED = 1.0;
-    private static final double LOCK_DISENGAGED = .57;
-    private static final double SHELF_STOW_LEFT = .5;
-    private static final double SHELF_STOW_RIGHT = .75;
-    private static final double SHELF_DISPENSE_LEFT = .4133;
-    private static final double SHELF_DISPENSE_RIGHT = .5867;
-    private static final double DISPENSER_NEUTRAL = .38567;
-    private static final double DISPENSER_LEFT = .113;
-    private static final double DISPENSER_RIGHT = 0.6423;
 
     // Declare drive motors
     DcMotor motorLeftFore;
@@ -238,12 +225,12 @@ public class TeleOp6253 extends SynchronousOpMode {
 
 
         //initializes servos to their starting positions
-        servoTilt.setPosition(DISPENSER_NEUTRAL);
-        servoLeftZip.setPosition(LEFT_ZIP_UP);
-        servoRightZip.setPosition(RIGHT_ZIP_UP);
-        servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
-        servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
-        servoLock.setPosition(LOCK_ENGAGED);
+        servoTilt.setPosition(ValueStore.DISPENSER_NEUTRAL);
+        servoLeftZip.setPosition(ValueStore.LEFT_ZIP_UP);
+        servoRightZip.setPosition(ValueStore.RIGHT_ZIP_UP);
+        servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
+        servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
+        servoLock.setPosition(ValueStore.LOCK_ENGAGED);
         servoTape.setPosition(.5);
         servoShuttle.setPosition(.5);
 
@@ -361,21 +348,21 @@ public class TeleOp6253 extends SynchronousOpMode {
         //auto positions for tilt
 
         if (gamepad2.x && !gamepad2.back) {
-            servoTilt.setPosition(DISPENSER_LEFT);
+            servoTilt.setPosition(ValueStore.DISPENSER_LEFT);
         }
 
         if (gamepad2.b && !gamepad2.back && !gamepad2.start) {
-            servoTilt.setPosition(DISPENSER_RIGHT);
+            servoTilt.setPosition(ValueStore.DISPENSER_RIGHT);
         }
 
         if (gamepad2.a && !gamepad1.start) {
-            servoTilt.setPosition(DISPENSER_NEUTRAL);
+            servoTilt.setPosition(ValueStore.DISPENSER_NEUTRAL);
         }
 
         if (gamepad2.dpad_up) {
             setArmPosition(ArmPosition.INITIALIZE);
-            servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
-            servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
+            servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
+            servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
         }
 
         retractSlides(gamepad2.dpad_down);
@@ -504,7 +491,7 @@ public class TeleOp6253 extends SynchronousOpMode {
             }
         } else {
             motorTape.setPower(-.5); //REVERSE THE MOTOR BEFORE DISENGAGING THE LOCK TO PREVENT GETTING STUCK
-            servoLock.setPosition(LOCK_DISENGAGED);
+            servoLock.setPosition(ValueStore.LOCK_DISENGAGED);
         }
     }
 
@@ -531,11 +518,11 @@ public class TeleOp6253 extends SynchronousOpMode {
                 }
             } else {
                 motorTape.setPower(-.5); //REVERSE THE MOTOR BEFORE DISENGAGING THE LOCK TO PREVENT GETTING STUCK
-                servoLock.setPosition(LOCK_DISENGAGED);
+                servoLock.setPosition(ValueStore.LOCK_DISENGAGED);
             }
         } else {
             motorTape.setPower(0.0);
-            servoLock.setPosition(LOCK_ENGAGED);
+            servoLock.setPosition(ValueStore.LOCK_ENGAGED);
             firstPressedDPad = false;
         }
     }
@@ -543,14 +530,14 @@ public class TeleOp6253 extends SynchronousOpMode {
     private void triggerZipline() {
         if (isBlue) {
             if (!atRestTriggers)
-                servoRightZip.setPosition(RIGHT_ZIP_UP); //Needs resting and active servo positions
+                servoRightZip.setPosition(ValueStore.RIGHT_ZIP_UP); //Needs resting and active servo positions
             else
-                servoRightZip.setPosition(RIGHT_ZIP_DOWN);
+                servoRightZip.setPosition(ValueStore.RIGHT_ZIP_DOWN);
         } else {
             if (!atRestTriggers)
-                servoLeftZip.setPosition(LEFT_ZIP_UP);
+                servoLeftZip.setPosition(ValueStore.LEFT_ZIP_UP);
             else
-                servoLeftZip.setPosition(LEFT_ZIP_DOWN);
+                servoLeftZip.setPosition(ValueStore.LEFT_ZIP_DOWN);
         }
         atRestTriggers = !atRestTriggers;
     }
@@ -623,16 +610,16 @@ public class TeleOp6253 extends SynchronousOpMode {
             if (scoreToggle == 1) {
                 //tilt dispenser
                 if (isBlue) {
-                    servoTilt.setPosition(DISPENSER_RIGHT);
+                    servoTilt.setPosition(ValueStore.DISPENSER_RIGHT);
                 } else {
-                    servoTilt.setPosition(DISPENSER_LEFT);
+                    servoTilt.setPosition(ValueStore.DISPENSER_LEFT);
                 }
                 scoreToggle++;
                 return;
             }
             if (scoreToggle == 2) {
                 //tilt dispenser back to neutral and return slides to starting position
-                servoTilt.setPosition(DISPENSER_NEUTRAL);
+                servoTilt.setPosition(ValueStore.DISPENSER_NEUTRAL);
                 motorSlide.setTargetPosition(startPosSlide);
                 scoreToggle = 0;
             }
@@ -801,11 +788,11 @@ public class TeleOp6253 extends SynchronousOpMode {
 
     private void toggleShelf(boolean stow) {
         if (stow) {
-            servoRightRamp.setPosition(SHELF_STOW_RIGHT);
-            servoLeftRamp.setPosition(SHELF_STOW_LEFT);
+            servoRightRamp.setPosition(ValueStore.SHELF_STOW_RIGHT);
+            servoLeftRamp.setPosition(ValueStore.SHELF_STOW_LEFT);
         } else {
-            servoRightRamp.setPosition(SHELF_DISPENSE_RIGHT);
-            servoLeftRamp.setPosition(SHELF_DISPENSE_LEFT);
+            servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
+            servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
         }
     }
 
