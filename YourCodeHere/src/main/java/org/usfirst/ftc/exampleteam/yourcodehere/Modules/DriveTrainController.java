@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * Initialize in main TeleOp class
  * call manualDrive in a recursive loop updating the left and right inputs
  * Use setDriveMode to change controls between tank and arcade (defaults to tank)
- * */
+ */
 
 public class DriveTrainController {
 
@@ -71,19 +71,20 @@ public class DriveTrainController {
                     setRightDrivePower(1);
                 }
             } else {
-                if (motors.get(0).getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+                if (!motors.get(0).getMode().equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
                     setDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
                 }
+                setLeftDrivePower(ScaleInput.scale(leftInput));
+                setRightDrivePower(ScaleInput.scale(rightInput));
             }
 
 
             //arcade drive
         } else {
-                setLeftDrivePower(ScaleInput.scale(leftInput) + ScaleInput.scale(rightInput));
-                setRightDrivePower(ScaleInput.scale(leftInput) - ScaleInput.scale(rightInput));
+            setLeftDrivePower(ScaleInput.scale(leftInput) + ScaleInput.scale(rightInput));
+            setRightDrivePower(ScaleInput.scale(leftInput) - ScaleInput.scale(rightInput));
         }
     }
-
 
 
     public void setDriveMode(DcMotorController.RunMode driveMode) {
@@ -96,8 +97,7 @@ public class DriveTrainController {
         if (motors.size() > 2) {
             motors.get(0).setPower(power);
             motors.get(2).setPower(power);
-        }
-        else {
+        } else {
             motors.get(0).setPower(power);
         }
     }
@@ -106,8 +106,7 @@ public class DriveTrainController {
         if (motors.size() > 2) {
             motors.get(1).setPower(power);
             motors.get(3).setPower(power);
-        }
-        else {
+        } else {
             motors.get(1).setPower(power);
         }
     }
@@ -132,11 +131,11 @@ public class DriveTrainController {
     }
 
     public int getAverageEncoderValueLeft() {
-            return (motors.get(0).getCurrentPosition());
+        return (motors.get(0).getCurrentPosition());
     }
 
     public int getAverageEncoderValueRight() {
-            return (motors.get(1).getCurrentPosition());
+        return (motors.get(1).getCurrentPosition());
     }
 
     public ArrayList<DcMotor> getMotors() {
