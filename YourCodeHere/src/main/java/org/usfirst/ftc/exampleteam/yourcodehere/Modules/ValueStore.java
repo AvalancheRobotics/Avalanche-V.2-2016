@@ -6,7 +6,6 @@ package org.usfirst.ftc.exampleteam.yourcodehere.Modules;
  */
 public class ValueStore {
     //Servo Values
-    //Servo Values
     public static final double RIGHT_ZIP_UP = .7956;
     public static final double RIGHT_ZIP_DOWN = 0;
     public static final double LEFT_ZIP_UP = .0657;

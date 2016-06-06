@@ -59,7 +59,7 @@ public class AutoRunner extends SynchronousOpMode {
             return;
         }
 
-        //remove end
+        //remove end t
         allOperations = allOperations.substring(0, allOperations.length() - 1);
 
         while (allOperations.contains("t")) {
@@ -72,10 +72,10 @@ public class AutoRunner extends SynchronousOpMode {
 
 
         while (operations.size() > 0) {
-            //turn the string number into an int
+            //Remove the firstOperation and store it seperately.
             String currentOperation = operations.remove(operations.size() - 1);
 
-
+            //turn the string number into an int
             int ticks = Integer.parseInt(currentOperation.substring(1));
 
             if (currentOperation.substring(0, 1).equals("f")) {

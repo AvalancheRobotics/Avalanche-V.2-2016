@@ -88,6 +88,9 @@ public class DriveTrainController {
 
 
     public void setDriveMode(DcMotorController.RunMode driveMode) {
+        if (motors.get(0).getMode().equals(driveMode))
+            return;
+
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setMode(driveMode);
         }

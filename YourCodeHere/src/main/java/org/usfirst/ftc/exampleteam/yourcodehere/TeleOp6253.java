@@ -182,7 +182,6 @@ public class TeleOp6253 extends SynchronousOpMode {
         // Initialize shuttle servo
         servoShuttle = hardwareMap.servo.get("Shuttle");
 
-
         // Reset encoders
         this.motorLeftAft.setMode(DcMotorController.RunMode.RESET_ENCODERS);
         this.motorLeftFore.setMode(DcMotorController.RunMode.RESET_ENCODERS);

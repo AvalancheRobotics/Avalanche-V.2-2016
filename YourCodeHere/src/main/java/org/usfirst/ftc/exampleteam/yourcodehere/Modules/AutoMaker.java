@@ -153,11 +153,11 @@ public class AutoMaker extends SynchronousOpMode {
                 else {
                     if (driveTrain.getAverageEncoderValueLeft() > 0) {
                         //turned right
-                        writeToFile("r" + Math.abs(driveTrain.getAverageEncoderValueLeft()));
+                        writeToFile("r" + Math.abs(driveTrain.getAverageEncoderValueLeft()) + "t") ;
                     }
                     else {
                         //turned left
-                        writeToFile("l" + Math.abs(driveTrain.getAverageEncoderValueRight()));
+                        writeToFile("l" + Math.abs(driveTrain.getAverageEncoderValueRight()) + "t");
                     }
                 }
 
@@ -296,7 +296,7 @@ public class AutoMaker extends SynchronousOpMode {
         try {
             outputStreamWriter.close();
             outputStreamWriter = new OutputStreamWriter(MyApplication.getContext().openFileOutput("auto.txt", Context.MODE_PRIVATE));
-            outputStreamWriter.write(withoutLastOp);
+            writeToFile(withoutLastOp);
         } catch (IOException e) {
             e.printStackTrace();
         }

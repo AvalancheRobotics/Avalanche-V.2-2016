@@ -58,4 +58,12 @@ public class LinearSlideController {
         motor.setTargetPosition(position);
     }
 
+    private void runToPosition(int position, double power) {
+        if (!motor.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+            motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
+        }
+        motor.setTargetPosition(position);
+        motor.setPower(power);
+    }
+
 }
