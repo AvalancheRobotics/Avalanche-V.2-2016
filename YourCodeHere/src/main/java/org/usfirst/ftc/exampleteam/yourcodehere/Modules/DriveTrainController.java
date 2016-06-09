@@ -3,7 +3,7 @@ package org.usfirst.ftc.exampleteam.yourcodehere.Modules;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
 
-import org.usfirst.ftc.exampleteam.yourcodehere.ArmPosition;
+import org.usfirst.ftc.exampleteam.yourcodehere.Modules.ScaleInput;
 
 import java.util.ArrayList;
 
@@ -16,26 +16,27 @@ import java.util.ArrayList;
 
 public class DriveTrainController {
 
-    private ArrayList<DcMotor> motors = new ArrayList<>();
+    private ArrayList<DcMotor> motors = new ArrayList<DcMotor>();
     private boolean usingTankDrive;
-
+    private ArrayList<Integer> encoderStartValues = new ArrayList<Integer>();
 
     //Constructors
 
     public DriveTrainController(DcMotor leftBack, DcMotor rightBack, DcMotor leftFront, DcMotor rightFront) {
-        DcMotor motor;
         motors.add(leftBack);
         motors.add(rightBack);
         motors.add(leftFront);
         motors.add(rightFront);
 
-        //Reverse left motors because gearing is flipped
-        motors.get(0).setDirection(DcMotor.Direction.REVERSE);
-        motors.get(2).setDirection(DcMotor.Direction.REVERSE);
+        //Reverse right motors because gearing is flipped
+        motors.get(1).setDirection(DcMotor.Direction.REVERSE);
+        motors.get(3).setDirection(DcMotor.Direction.REVERSE);
 
         usingTankDrive = true;
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            motors.get(i).setPower(0);
+            encoderStartValues.add(motors.get(i).getCurrentPosition());
         }
     }
 
@@ -43,12 +44,14 @@ public class DriveTrainController {
         motors.add(left);
         motors.add(right);
 
-        //Reverse left motor because gearing is flipped
-        motors.get(0).setDirection(DcMotor.Direction.REVERSE);
+        //Reverse right motor because gearing is flipped
+        motors.get(1).setDirection(DcMotor.Direction.REVERSE);
 
         usingTankDrive = true;
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            motors.get(i).setPower(0);
+            encoderStartValues.add(motors.get(i).getCurrentPosition());
         }
     }
 
@@ -116,29 +119,28 @@ public class DriveTrainController {
 
     public void resetEncoders() {
         for (int i = 0; i < motors.size(); i++) {
-            motors.get(i).setMode(DcMotorController.RunMode.RESET_ENCODERS);
-            motors.get(i).setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            encoderStartValues.set(i, motors.get(i).getCurrentPosition());
         }
+    }
+
+    public void hardResetEncoders() {
+        for (int i = 0; i < motors.size(); i++) {
+            motors.get(i).setMode(DcMotorController.RunMode.RESET_ENCODERS);
+            encoderStartValues.set(i, 0);
+        }
+
     }
 
     public int getEncoderValue(int index) {
-        return motors.get(index).getCurrentPosition();
+        return motors.get(index).getCurrentPosition() - encoderStartValues.get(index);
     }
 
     public int getAverageEncoderValue() { //returns average of back wheels
-        int total = 0;
-        for (int i = 0; i < 2; i++) {
-            total = total + motors.get(i).getCurrentPosition();
-        }
-        return total / 2;
+        return (motors.get(0).getCurrentPosition() + motors.get(1).getCurrentPosition() - encoderStartValues.get(0) - encoderStartValues.get(1)) / 2;
     }
 
-    public int getAverageEncoderValueLeft() {
-        return (motors.get(0).getCurrentPosition());
-    }
-
-    public int getAverageEncoderValueRight() {
-        return (motors.get(1).getCurrentPosition());
+    public void setTargetPosition (int index, int target) {
+        motors.get(index).setTargetPosition(target + encoderStartValues.get(index));
     }
 
     public ArrayList<DcMotor> getMotors() {
@@ -176,6 +178,17 @@ public class DriveTrainController {
             leftMotors.add(motors.get(2));
         }
         return leftMotors;
+    }
+
+    public boolean reachedTarget() {
+        boolean reached = true;
+
+        for (int i = 0; i < motors.size(); i++) {
+            if (!(motors.get(i).getCurrentPosition() < motors.get(i).getTargetPosition() + 18 && motors.get(i).getCurrentPosition() > motors.get(i).getTargetPosition() - 18)) {
+                reached = false;
+            }
+        }
+        return reached;
     }
 
 }

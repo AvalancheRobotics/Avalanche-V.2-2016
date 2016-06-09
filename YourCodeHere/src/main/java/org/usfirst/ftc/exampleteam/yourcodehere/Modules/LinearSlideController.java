@@ -13,20 +13,14 @@ import org.usfirst.ftc.exampleteam.yourcodehere.Height;
  */
 public class LinearSlideController {
     DcMotor motor;
-    private boolean runningAutoRetract = false;
+    private boolean runningAutoRetract;
 
     public LinearSlideController(DcMotor slideMotor) {
         motor = slideMotor;
+        motor.setMode(DcMotorController.RunMode.RESET_ENCODERS);
         motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-    }
-
-    public void retractSlides(int startPosition) {
-        if (!motor.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
-            motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-        }
-        motor.setPower(1);
-        motor.setTargetPosition(startPosition);
-        runningAutoRetract = true;
+        motor.setTargetPosition(0);
+        runningAutoRetract = false;
     }
 
     //Stops any auto methods using slides and manually controls power with joysticks
@@ -52,18 +46,13 @@ public class LinearSlideController {
         }
     }
 
-    public void extendSlide(int position) {
-        motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
-        motor.setPower(1);
-        motor.setTargetPosition(position);
-    }
-
     private void runToPosition(int position, double power) {
         if (!motor.getMode().equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
             motor.setMode(DcMotorController.RunMode.RUN_TO_POSITION);
         }
         motor.setTargetPosition(position);
         motor.setPower(power);
+        runningAutoRetract = true;
     }
 
 }

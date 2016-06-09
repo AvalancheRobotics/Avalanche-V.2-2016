@@ -1,13 +1,15 @@
 package org.usfirst.ftc.exampleteam.yourcodehere.Modules;
 
-import android.media.MediaPlayer;
 import android.util.Log;
 
-import com.qualcomm.robotcore.hardware.*;
+import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 
-import org.swerverobotics.library.*;
-import org.swerverobotics.library.interfaces.*;
-import org.usfirst.ftc.exampleteam.yourcodehere.Modules.DriveTrainController;
+
+import org.swerverobotics.library.SynchronousOpMode;
+import org.swerverobotics.library.interfaces.TeleOp;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -16,7 +18,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-@Autonomous(name = "AutoRunner")
+@TeleOp(name = "AutoRunner")
 public class AutoRunner extends SynchronousOpMode {
 
     // Declare drive motors
@@ -28,10 +30,8 @@ public class AutoRunner extends SynchronousOpMode {
 
     @Override
     public void main() throws InterruptedException {
-        /* Initialize our hardware variables. Note that the strings used here as parameters
-         * to 'get' must correspond to the names you assigned during the robot configuration
-         * step you did in the FTC Robot Controller app on the phone.
-         */
+
+        telemetry.addData("Started", "Init");
 
         // Initialize drive motors
         motorLeftFore = hardwareMap.dcMotor.get("LeftFore");
@@ -41,18 +41,20 @@ public class AutoRunner extends SynchronousOpMode {
 
         DriveTrainController driveTrain = new DriveTrainController(motorLeftAft, motorRightAft, motorLeftFore, motorRightFore);
 
-        driveTrain.resetEncoders();
         driveTrain.setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
 
+
         for (int i = 0; i < driveTrain.getMotors().size(); i++) {
-            driveTrain.getMotors().get(i).setTargetPosition(0);
+            driveTrain.setTargetPosition(i, 0);
         }
 
-        driveTrain.setLeftDrivePower(.8);
-        driveTrain.setRightDrivePower(.8);
 
+        driveTrain.setLeftDrivePower(.4);
+        driveTrain.setRightDrivePower(.4);
 
         String allOperations = readFromFile();
+
+        telemetry.addData("Ops", allOperations);
 
         if (allOperations.length() == 0) {
             //No operations in file
@@ -68,49 +70,60 @@ public class AutoRunner extends SynchronousOpMode {
         }
         operations.add(allOperations);
 
+        telemetry.addData("Ops", operations);
+
+        driveTrain.resetEncoders();
+
+        telemetry.update();
+
         waitForStart();
 
+        while ((opModeIsActive() && operations.size() > 0)) {
+            telemetry.addData("reachedTarget?", driveTrain.reachedTarget());
+                //Remove the firstOperation and store it separately.
+                //String currentOperation = operations.remove(operations.size() - 1);
+                String currentOperation = operations.remove(operations.size() - 1);
+                String direction = currentOperation.substring(0, 1);
 
-        while (operations.size() > 0) {
-            //Remove the firstOperation and store it seperately.
-            String currentOperation = operations.remove(operations.size() - 1);
+                telemetry.addData("Current Op", currentOperation);
 
-            //turn the string number into an int
-            int ticks = Integer.parseInt(currentOperation.substring(1));
+                //turn the string number into an int
+                int ticks = Integer.parseInt(currentOperation.substring(1));
+                int leftPositive = 1;
+                int rightPositive = 1;
 
-            if (currentOperation.substring(0, 1).equals("f")) {
-                for (int i = 0; i < driveTrain.getMotors().size(); i++) {
-                    driveTrain.getMotors().get(i).setTargetPosition(ticks);
+                switch (direction) {
+                    case "f":
+                        leftPositive = 1;
+                        rightPositive = 1;
+                        break;
+                    case "b":
+                        leftPositive = -1;
+                        rightPositive = -1;
+                        break;
+                    case "l":
+                        leftPositive = -1;
+                        rightPositive = 1;
+                        break;
+                    case "r":
+                        leftPositive = 1;
+                        rightPositive = -1;
+                        break;
                 }
-            }
+                driveTrain.resetEncoders();
 
-            if (currentOperation.substring(0, 1).equals("r")) {
-                for (int i = 0; i < driveTrain.getMotors().size(); i++) {
-                    driveTrain.getMotors().get(i).setTargetPosition(-ticks);
-                }
-            }
+                driveTrain.setTargetPosition(0, leftPositive * ticks);
+                driveTrain.setTargetPosition(2, leftPositive * ticks);
+                driveTrain.setTargetPosition(1, rightPositive * ticks);
+                driveTrain.setTargetPosition(3, rightPositive * ticks);
 
-            if (currentOperation.substring(0, 1).equals("l")) {
-                for (int i = 0; i < driveTrain.getLeftMotors().size(); i++) {
-                    driveTrain.getLeftMotors().get(i).setTargetPosition(-ticks);
-                    driveTrain.getRightMotors().get(i).setTargetPosition(ticks);
-                }
-            }
-
-            if (currentOperation.substring(0, 1).equals("r")) {
-                for (int i = 0; i < driveTrain.getLeftMotors().size(); i++) {
-                    driveTrain.getLeftMotors().get(i).setTargetPosition(ticks);
-                    driveTrain.getRightMotors().get(i).setTargetPosition(-ticks);
-                }
-            }
-
-            while (driveTrain.isBusy()) {
+            while (!driveTrain.reachedTarget()) {
                 idle();
             }
-
-            driveTrain.resetEncoders();
-
+            telemetry.addData("Done", operations);
         }
+
+        //stop();
 
 
     }

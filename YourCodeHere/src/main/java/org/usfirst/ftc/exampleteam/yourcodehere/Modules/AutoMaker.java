@@ -7,25 +7,13 @@ package org.usfirst.ftc.exampleteam.yourcodehere.Modules;
 import android.content.Context;
 import android.util.Log;
 
-import com.qualcomm.ftcrobotcontroller.FtcRobotControllerActivity;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.Servo;
-
-import org.swerverobotics.library.SynchronousOpMode;
-import org.swerverobotics.library.interfaces.IBNO055IMU;
-import org.swerverobotics.library.interfaces.TeleOp;
-
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorController;
-import com.qualcomm.robotcore.hardware.GyroSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +37,6 @@ import java.io.OutputStreamWriter;
  */
 
 //Format Type of movement forward backward left right (f, b, l, r), number of ticks followed by t (2000t)
-
 @TeleOp(name = "AutoMaker")
 public class AutoMaker extends SynchronousOpMode {
 
@@ -60,15 +47,39 @@ public class AutoMaker extends SynchronousOpMode {
     DcMotor motorRightAft;
     DriveTrainController driveTrain;
 
-    boolean drivingStraight;
+    boolean currentAction; //
     boolean firstAction = true;
 
     OutputStreamWriter outputStreamWriter;
 
 
+    public void initialization() {
+        try {
+            outputStreamWriter = new OutputStreamWriter(MyApplication.getContext().openFileOutput("auto.txt", Context.MODE_PRIVATE));
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+
+
+        try {
+            outputStreamWriter.flush();
+            telemetry.addData("flush", "success");
+        } catch (IOException e) {
+            e.printStackTrace();
+            telemetry.addData("flush", "failed");
+        }
+
+        String s = readFromFile();
+
+        hardwareMapping();
+
+        telemetry.addData("file", s);
+        telemetry.addData("Out", outputStreamWriter);
+        telemetry.update();
+    }
 
     //Initialize and Map All Hardware
-    private void hardwareMapping() throws InterruptedException {
+    private void hardwareMapping() {
         motorLeftAft = hardwareMap.dcMotor.get("LeftAft");
         motorLeftFore = hardwareMap.dcMotor.get("LeftFore");
         motorRightAft = hardwareMap.dcMotor.get("RightAft");
@@ -84,97 +95,97 @@ public class AutoMaker extends SynchronousOpMode {
 
     @Override
     public void main() throws InterruptedException {
-        
-        try {
-            outputStreamWriter = new OutputStreamWriter(MyApplication.getContext().openFileOutput("auto.txt", Context.MODE_PRIVATE));
-        }
-        catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-
-        hardwareMapping();
+        initialization();
 
         waitForStart();
 
-
-        // Go go gadget robot!
         while (opModeIsActive()) {
 
-            boolean previousAction = drivingStraight;
-            boolean firstAct = firstAction;
-
-            if (ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0) {
-                if (gamepad1.left_trigger > gamepad1.right_trigger) {
-                    driveTrain.manualDrive(-gamepad1.left_trigger, -gamepad1.left_trigger);
-                } else {
-                    driveTrain.manualDrive(gamepad1.right_trigger, gamepad1.right_trigger);
-                }
-                drivingStraight = true;
-                firstAction = false;
-            }
+            if (updateGamepads()) {
+                boolean previousAction = currentAction;
+                boolean firstAct = firstAction;
 
 
-            //turn right
-            if (gamepad1.right_bumper) {
-                driveTrain.setLeftDrivePower(.2);
-                driveTrain.setRightDrivePower(-.2);
-                drivingStraight = false;
-                firstAction = false;
-            }
-
-            //turn left
-            if (gamepad1.left_bumper) {
-                driveTrain.setLeftDrivePower(-.2);
-                driveTrain.setRightDrivePower(.2);
-                drivingStraight = false;
-                firstAction = false;
-            }
-
-            if (gamepad1.a) {
-                undoLastMove();
-            }
-
-
-            if (previousAction != drivingStraight && !firstAct) {
-                //Log if change actions
-
-                //If you just finished driving straight
-                if (previousAction) {
-                    //If drove forward
-                    if (driveTrain.getAverageEncoderValue() > 0) {
-                        writeToFile("f" + Math.abs(driveTrain.getAverageEncoderValue()) + "t");
+                if (ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0) {
+                    if (gamepad1.left_trigger > gamepad1.right_trigger) {
+                        driveTrain.manualDrive(-gamepad1.left_trigger, -gamepad1.left_trigger);
+                    } else {
+                        driveTrain.manualDrive(gamepad1.right_trigger, gamepad1.right_trigger);
                     }
-                    else {
-                        //If drove backward
-                        writeToFile("b" + Math.abs(driveTrain.getAverageEncoderValue()) + "t");
-                    }
-                }
-                //If you just finished turning
-                else {
-                    if (driveTrain.getAverageEncoderValueLeft() > 0) {
-                        //turned right
-                        writeToFile("r" + Math.abs(driveTrain.getAverageEncoderValueLeft()) + "t") ;
-                    }
-                    else {
-                        //turned left
-                        writeToFile("l" + Math.abs(driveTrain.getAverageEncoderValueRight()) + "t");
-                    }
+                    currentAction = true;
+                    firstAction = false;
                 }
 
-                driveTrain.resetEncoders();
+
+                //turn right
+                if (gamepad1.right_bumper) {
+                    driveTrain.setLeftDrivePower(.2);
+                    driveTrain.setRightDrivePower(-.2);
+                    currentAction = false;
+                    firstAction = false;
+                }
+
+                //turn left
+                if (gamepad1.left_bumper) {
+                    driveTrain.setLeftDrivePower(-.2);
+                    driveTrain.setRightDrivePower(.2);
+                    currentAction = false;
+                    firstAction = false;
+                }
+
+                if (!gamepad1.left_bumper && !gamepad1.right_bumper && !(ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0)) {
+                    driveTrain.setLeftDrivePower(0);
+                    driveTrain.setRightDrivePower(0);
+                }
+
+
+                if ((previousAction != currentAction) && !firstAct) {
+                    int ticks = Math.abs(driveTrain.getEncoderValue(0)) + Math.abs(driveTrain.getEncoderValue(1)) + Math.abs(driveTrain.getEncoderValue(2)) + Math.abs(driveTrain.getEncoderValue(3));
+                    ticks = ticks / 4;
+                    String message;
+                    if (previousAction) {
+                        if (driveTrain.getEncoderValue(0) > 0) {
+                            message = "f";
+                        } else {
+                            message = "b";
+                        }
+                    } else {
+                        if (driveTrain.getEncoderValue(0) > 0) {
+                            message = "r";
+                        } else {
+                            message = "l";
+                        }
+                    }
+
+                    message = message + ticks + "t";
+                    writeToFile(message);
+                    telemetry.addData("encoder1", driveTrain.getEncoderValue(0));
+                    driveTrain.resetEncoders();
+                    telemetry.addData("encoder2", driveTrain.getEncoderValue(0));
+                }
+
+
+                if (gamepad1.b) {
+                    try {
+                        outputStreamWriter.flush();
+                        telemetry.addData("Read", readFromFile());
+                    } catch (IOException e) {
+                        telemetry.addData("Read", "Failed");
+                    }
+                }
+
+
+                if (gamepad1.a) {
+                    telemetry.addData("wait", "done");
+                    undoLastMove();
+                }
             }
-
-            idle();
-
+            telemetry.update();
         }
 
-        try {
-            outputStreamWriter.close();
-        } catch (IOException e) {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
 
     }
+
 
     private void writeToFile(String data) {
         try {
@@ -221,29 +232,38 @@ public class AutoMaker extends SynchronousOpMode {
             e.printStackTrace();
         }
 
-
-        //Undo current move
-        for (int i = 0; i < driveTrain.getMotors().size(); i++) {
-            driveTrain.getMotors().get(i).setTargetPosition(0);
-        }
+        telemetry.addData("wsgfait", "done");
 
         driveTrain.setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
 
-        driveTrain.setRightDrivePower(.7);
-        driveTrain.setLeftDrivePower(.7);
+        //Undo current move
+        for (int i = 0; i < driveTrain.getMotors().size(); i++) {
+            driveTrain.setTargetPosition(i, 0);
+        }
+
+        driveTrain.setRightDrivePower(.3);
+        driveTrain.setLeftDrivePower(.3);
+
+        telemetry.addData("wait", "dkjkone");
 
 
-        while (driveTrain.isBusy()) {
+        while (!driveTrain.reachedTarget()) {
             idle();
+            telemetry.addData(driveTrain.getMotors().get(0).getCurrentPosition() - driveTrain.getMotors().get(0).getTargetPosition() + "", driveTrain.getMotors().get(1).getCurrentPosition() - driveTrain.getMotors().get(1).getTargetPosition() + "");
+            telemetry.addData(driveTrain.getMotors().get(2).getCurrentPosition() - driveTrain.getMotors().get(2).getTargetPosition() + "", driveTrain.getMotors().get(3).getCurrentPosition() - driveTrain.getMotors().get(3).getTargetPosition() + "");
         }
 
         String s = readFromFile();
         int endIndex = s.lastIndexOf("t");
 
         if (endIndex == -1) {
+            driveTrain.resetEncoders();
+            driveTrain.setDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
             //Do nothing if there are no operations
             return;
         }
+
+        driveTrain.resetEncoders();
 
 
         //Find the start index of the last operation performed
@@ -259,35 +279,39 @@ public class AutoMaker extends SynchronousOpMode {
         int ticks = Integer.parseInt(operation.substring(1));
 
         //Operations are reversed of what they normally are because you're undoing a move
-        if (operation.substring(0,1).equals("f")) {
+        if (operation.substring(0, 1).equals("f")) {
             for (int i = 0; i < driveTrain.getMotors().size(); i++) {
-                driveTrain.getMotors().get(i).setTargetPosition(-ticks);
+                driveTrain.setTargetPosition(i, -ticks);
             }
         }
 
-        if (operation.substring(0,1).equals("r")) {
+        else if (operation.substring(0, 1).equals("r")) {
             for (int i = 0; i < driveTrain.getMotors().size(); i++) {
-                driveTrain.getMotors().get(i).setTargetPosition(ticks);
+                driveTrain.setTargetPosition(i, ticks);
             }
         }
 
-        if (operation.substring(0,1).equals("l")) {
-            for (int i = 0; i < driveTrain.getLeftMotors().size(); i++) {
-                driveTrain.getLeftMotors().get(i).setTargetPosition(ticks);
-                driveTrain.getRightMotors().get(i).setTargetPosition(-ticks);
-            }
+        else if (operation.substring(0, 1).equals("l")) {
+            driveTrain.setTargetPosition(0, ticks);
+            driveTrain.setTargetPosition(1, -ticks);
+            driveTrain.setTargetPosition(2, ticks);
+            driveTrain.setTargetPosition(3, -ticks);
         }
 
-        if (operation.substring(0,1).equals("r")) {
-            for (int i = 0; i < driveTrain.getLeftMotors().size(); i++) {
-                driveTrain.getLeftMotors().get(i).setTargetPosition(-ticks);
-                driveTrain.getRightMotors().get(i).setTargetPosition(ticks);
-            }
+        else if (operation.substring(0, 1).equals("r")) {
+            driveTrain.setTargetPosition(0, -ticks);
+            driveTrain.setTargetPosition(1, ticks);
+            driveTrain.setTargetPosition(2, -ticks);
+            driveTrain.setTargetPosition(3, ticks);
         }
 
-        while (driveTrain.isBusy()) {
+        while (!driveTrain.reachedTarget()) {
             idle();
+            telemetry.addData("wait", "WAITING");
         }
+
+        telemetry.addData("wait", "done");
+
 
         //Rebuild file without last operation
 
@@ -300,7 +324,15 @@ public class AutoMaker extends SynchronousOpMode {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        driveTrain.setDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        driveTrain.setRightDrivePower(0);
+        driveTrain.setLeftDrivePower(0);
+        driveTrain.resetEncoders();
     }
 
+
 }
+
+
 
