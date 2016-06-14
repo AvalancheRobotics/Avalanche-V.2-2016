@@ -46,6 +46,7 @@ public class AutoMaker extends SynchronousOpMode {
     DcMotor motorLeftAft;
     DcMotor motorRightAft;
     DriveTrainController driveTrain;
+    boolean previousAction;
 
     boolean currentAction; //
     boolean firstAction = true;
@@ -102,7 +103,7 @@ public class AutoMaker extends SynchronousOpMode {
         while (opModeIsActive()) {
 
             if (updateGamepads()) {
-                boolean previousAction = currentAction;
+                previousAction = currentAction;
                 boolean firstAct = firstAction;
 
 
@@ -179,13 +180,44 @@ public class AutoMaker extends SynchronousOpMode {
                     telemetry.addData("wait", "done");
                     undoLastMove();
                 }
+
+                if (gamepad1.x) {
+                    forceWrite();
+                }
             }
             telemetry.update();
+            idle();
         }
 
-
+        idle();
     }
 
+    private void forceWrite() {
+        int ticks = Math.abs(driveTrain.getEncoderValue(0)) + Math.abs(driveTrain.getEncoderValue(1)) + Math.abs(driveTrain.getEncoderValue(2)) + Math.abs(driveTrain.getEncoderValue(3));
+        ticks = ticks / 4;
+        String message;
+        if (previousAction) {
+            if (driveTrain.getEncoderValue(0) > 0) {
+                message = "f";
+            } else {
+                message = "b";
+            }
+        } else {
+            if (driveTrain.getEncoderValue(0) > 0) {
+                message = "r";
+            } else {
+                message = "l";
+            }
+        }
+
+        message = message + ticks + "t";
+        writeToFile(message);
+        telemetry.addData("encoder1", driveTrain.getEncoderValue(0));
+        driveTrain.resetEncoders();
+        telemetry.addData("encoder2", driveTrain.getEncoderValue(0));
+
+        firstAction = true;
+    }
 
     private void writeToFile(String data) {
         try {
@@ -232,8 +264,6 @@ public class AutoMaker extends SynchronousOpMode {
             e.printStackTrace();
         }
 
-        telemetry.addData("wsgfait", "done");
-
         driveTrain.setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
 
         //Undo current move
@@ -244,13 +274,13 @@ public class AutoMaker extends SynchronousOpMode {
         driveTrain.setRightDrivePower(.3);
         driveTrain.setLeftDrivePower(.3);
 
-        telemetry.addData("wait", "dkjkone");
 
 
         while (!driveTrain.reachedTarget()) {
             idle();
             telemetry.addData(driveTrain.getMotors().get(0).getCurrentPosition() - driveTrain.getMotors().get(0).getTargetPosition() + "", driveTrain.getMotors().get(1).getCurrentPosition() - driveTrain.getMotors().get(1).getTargetPosition() + "");
             telemetry.addData(driveTrain.getMotors().get(2).getCurrentPosition() - driveTrain.getMotors().get(2).getTargetPosition() + "", driveTrain.getMotors().get(3).getCurrentPosition() - driveTrain.getMotors().get(3).getTargetPosition() + "");
+            telemetry.update();
         }
 
         String s = readFromFile();
@@ -285,7 +315,7 @@ public class AutoMaker extends SynchronousOpMode {
             }
         }
 
-        else if (operation.substring(0, 1).equals("r")) {
+        else if (operation.substring(0, 1).equals("b")) {
             for (int i = 0; i < driveTrain.getMotors().size(); i++) {
                 driveTrain.setTargetPosition(i, ticks);
             }
@@ -307,11 +337,7 @@ public class AutoMaker extends SynchronousOpMode {
 
         while (!driveTrain.reachedTarget()) {
             idle();
-            telemetry.addData("wait", "WAITING");
         }
-
-        telemetry.addData("wait", "done");
-
 
         //Rebuild file without last operation
 
@@ -329,6 +355,50 @@ public class AutoMaker extends SynchronousOpMode {
         driveTrain.setRightDrivePower(0);
         driveTrain.setLeftDrivePower(0);
         driveTrain.resetEncoders();
+
+        firstAction = true;
+    }
+
+    @Override
+    public void idle() throws InterruptedException
+    {
+        // Abort the world if the OpMode has been asked to stop
+        if (this.isStopRequested()) {
+            int ticks = Math.abs(driveTrain.getEncoderValue(0)) + Math.abs(driveTrain.getEncoderValue(1)) + Math.abs(driveTrain.getEncoderValue(2)) + Math.abs(driveTrain.getEncoderValue(3));
+            ticks = ticks / 4;
+            String message;
+            if (previousAction) {
+                if (driveTrain.getEncoderValue(0) > 0) {
+                    message = "f";
+                } else {
+                    message = "b";
+                }
+            } else {
+                if (driveTrain.getEncoderValue(0) > 0) {
+                    message = "r";
+                } else {
+                    message = "l";
+                }
+            }
+
+            message = message + ticks + "t";
+            writeToFile(message);
+            telemetry.addData("encoder1", driveTrain.getEncoderValue(0));
+            driveTrain.resetEncoders();
+            telemetry.addData("encoder2", driveTrain.getEncoderValue(0));
+
+            try {
+                outputStreamWriter.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            throw new InterruptedException();
+
+        }
+
+        // Otherwise, yield back our thread scheduling quantum and give other threads at
+        // our priority level a chance to run
+        Thread.yield();
     }
 
 

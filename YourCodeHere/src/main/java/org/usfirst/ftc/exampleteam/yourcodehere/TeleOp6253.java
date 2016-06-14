@@ -143,7 +143,7 @@ public class TeleOp6253 extends SynchronousOpMode {
     Servo servoShuttle;
 
     //Initialize and Map All Hardware
-    private void hardwareMapping() throws InterruptedException {
+    private void hardwareMapping() {
         // Initialize drive motors
         motorLeftFore = hardwareMap.dcMotor.get("LeftFore");
         motorLeftAft = hardwareMap.dcMotor.get("LeftAft");

@@ -184,7 +184,7 @@ public class DriveTrainController {
         boolean reached = true;
 
         for (int i = 0; i < motors.size(); i++) {
-            if (!(motors.get(i).getCurrentPosition() < motors.get(i).getTargetPosition() + 18 && motors.get(i).getCurrentPosition() > motors.get(i).getTargetPosition() - 18)) {
+            if (!(motors.get(i).getCurrentPosition() < motors.get(i).getTargetPosition() + 5 && motors.get(i).getCurrentPosition() > motors.get(i).getTargetPosition() - 5)) {
                 reached = false;
             }
         }
