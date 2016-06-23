@@ -1,4 +1,4 @@
-[![Stories in Ready](https://badge.waffle.io/AvalancheRobotics/Avalanche-V.2-2016.png?label=ready&title=Ready)](https://waffle.io/AvalancheRobotics/Avalanche-V.2-2016)
+[![Stories in Ready](https://badge.waffle.io/AvalancheRobotics/Avalanche-V.2-2016.png?label=ready&title=Ready)](https://waffle.io/AvalancheRobotics/Avalanche-V.2-2016) [![Codacy grade](https://img.shields.io/codacy/grade/9388e0d8170c4abab5bd5c2ce2f6df24.svg?maxAge=2592000)](https://www.codacy.com/app/pandemic/Avalanche-V-2-2016)
 # Swerve Robotics FTC Library
 
 Welcome to the Swerve Robotics library for the FTC robot controller runtime.
