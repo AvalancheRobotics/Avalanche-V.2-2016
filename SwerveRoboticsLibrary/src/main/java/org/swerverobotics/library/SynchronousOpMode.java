@@ -208,7 +208,7 @@ public abstract class SynchronousOpMode extends OpMode
      * @see #synchronousThreadIdle()
      * @see #waitOneFullHardwareCycle()
      */
-    public final void idle() throws InterruptedException
+    public void idle() throws InterruptedException
         {
         // Abort the world if the OpMode has been asked to stop
         if (this.isStopRequested())
