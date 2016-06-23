@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/AvalancheRobotics/Avalanche-V.2-2016.png?label=ready&title=Ready)](https://waffle.io/AvalancheRobotics/Avalanche-V.2-2016)
 # Swerve Robotics FTC Library
 
 Welcome to the Swerve Robotics library for the FTC robot controller runtime.
