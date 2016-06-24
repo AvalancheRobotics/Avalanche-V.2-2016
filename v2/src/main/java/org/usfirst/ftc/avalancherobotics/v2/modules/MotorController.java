@@ -11,12 +11,15 @@ import java.util.ArrayList;
 public class MotorController {
     private ArrayList<DcMotor> motors;
     private ArrayList<Integer> encoderStartValues;
+    private boolean autoOverrideEnabled;
 
     public MotorController() {
         motors = new ArrayList<>();
         encoderStartValues = new ArrayList<Integer>();
+        autoOverrideEnabled = true;
     }
 
+    //Adds motor to controller and saves it's current value as a start value.
     public void add(DcMotor motor) {
         motors.add(motor);
         encoderStartValues.add(motor.getCurrentPosition());
@@ -35,11 +38,12 @@ public class MotorController {
         }
     }
 
+    //Returns run mode of motor at given position
     public DcMotorController.RunMode getRunMode(int index) {
         return motors.get(index).getMode();
     }
 
-    //Sets the runmode for all motors
+    //Sets the run mode for all motors
     public void setRunMode(DcMotorController.RunMode runMode) {
         for (int i = 0; i < motors.size(); i++) {
             if (!motors.get(i).getMode().equals(runMode)) {
@@ -48,37 +52,44 @@ public class MotorController {
         }
     }
 
-    //Sets runmode of motor at specified index
+    //Sets run mode of motor at specified index
     public void setRunMode(DcMotorController.RunMode runMode, int index) {
         if (!motors.get(index).getMode().equals(runMode)) {
             motors.get(index).setMode(runMode);
         }
     }
 
+    //sets power at given index
+    //Also changes to manuel mode if manualOverride is enabled or the motor has already reached it's target
     public void setPower(int index, double power) {
-        motors.get(index).setPower(power);
-    }
+        if (getRunMode(index).equals(DcMotorController.RunMode.RUN_USING_ENCODERS) || reachedTarget(index, 5) || autoOverrideEnabled) {
 
-    public void setPowers(double power) {
-        for (int i = 0; i < motors.size(); i++) {
-            motors.get(i).setPower(power);
+            if (!getRunMode(index).equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
+                setRunMode(DcMotorController.RunMode.RUN_USING_ENCODERS, index);
+            }
+            motors.get(index).setPower(power);
+
         }
     }
 
+    //returns the power of the motor at the index
     public void getPower(int index) {
         motors.get(index).getPower();
     }
 
+    //Resets the encoderStartValue at the given index to current value (faster and more reliable than hard resetting encoders)
     public void resetEncoder(int index) {
         encoderStartValues.set(index, motors.get(index).getCurrentPosition());
     }
 
+    //Resets all encoderStartValues to current value (faster and more reliable than hard resetting encoders)
     public void resetEncoders() {
         for (int i = 0; i < motors.size(); i++) {
             encoderStartValues.set(i, motors.get(i).getCurrentPosition());
         }
     }
 
+    //Resets the actual values of all encoders (Use sparingly)
     public void hardResetEncoders() {
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setMode(DcMotorController.RunMode.RESET_ENCODERS);
@@ -87,15 +98,17 @@ public class MotorController {
 
     }
 
+    //Resets the actual values of encoder at given value (Use sparingly)
     public void hardResetEncoder(int index) {
         encoderStartValues.set(index, motors.get(index).getCurrentPosition());
     }
 
+    //Gets the soft encoder value of the motor at the given position
     public int getEncoderValue(int index) {
         return motors.get(index).getCurrentPosition() - encoderStartValues.get(index);
     }
 
-
+    //If all the motors are busy returns true
     public boolean isBusy() {
         for (int i = 0; i < motors.size(); i++) {
             if (motors.get(i).isBusy()) {
@@ -105,27 +118,59 @@ public class MotorController {
         return false;
     }
 
-    public boolean reachedTargets() {
+    //If the motor is within the specified threshold of every motors' target positions. returns true
+    public boolean reachedTargets(int threshold) {
         boolean reached = true;
 
         for (int i = 0; i < motors.size(); i++) {
-            if (!(motors.get(i).getCurrentPosition() < motors.get(i).getTargetPosition() + 5 && motors.get(i).getCurrentPosition() > motors.get(i).getTargetPosition() - 5)) {
+            if (!(motors.get(i).getCurrentPosition() < motors.get(i).getTargetPosition() + threshold && motors.get(i).getCurrentPosition() > motors.get(i).getTargetPosition() - threshold)) {
                 reached = false;
             }
         }
         return reached;
     }
 
-    public boolean reachedTarget(int index) {
-        return (motors.get(index).getCurrentPosition() < motors.get(index).getTargetPosition() + 5 && motors.get(index).getCurrentPosition() > motors.get(index).getTargetPosition() - 5);
+    //If the motor is within the specified threshold of the motor's target position. returns true
+    public boolean reachedTarget(int index, int threshold) {
+        return motors.get(index).getCurrentPosition() < motors.get(index).getTargetPosition() + threshold && motors.get(index).getCurrentPosition() > motors.get(index).getTargetPosition() - threshold;
     }
 
+    //Sets the soft target position of the motor at the given index
     public void setTargetPosition(int index, int target) {
         motors.get(index).setTargetPosition(target + encoderStartValues.get(index));
     }
 
+    //Sets the soft target position of the motor at the given index
     public int getTargetPosition(int index) {
-        return motors.get(index).getCurrentPosition();
+        return motors.get(index).getCurrentPosition() - encoderStartValues.get(index);
     }
 
+    //Sets the power and target position of the motor at the given index.
+    //Automatically sets the run mode to auto mode if not already
+    public void runToPosition(int index, double power, int targetPosition) {
+        if (!getRunMode(index).equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
+            setRunMode(DcMotorController.RunMode.RUN_TO_POSITION, index);
+        }
+        if (motors.get(index).getPower() != power) {
+            motors.get(index).setPower(power);
+        }
+            setTargetPosition(index, targetPosition);
+        }
+
+    //If the run mode is runToPosition return true
+    public boolean runningAuto(int index) {
+        return DcMotorController.RunMode.RUN_TO_POSITION.equals(motors.get(index).getMode());
+    }
+
+    //Toggles auto override.
+    //If auto override is enabled, setting the power for a motor will interrupt the
+    //current auto action regardless if it's reached its target
+    public void toggleAutoOverride(boolean enableOverride) {
+        autoOverrideEnabled = enableOverride;
+    }
+
+    //Returns auto override
+    public boolean isAutoOverrideEnabled() {
+        return autoOverrideEnabled;
+    }
 }
