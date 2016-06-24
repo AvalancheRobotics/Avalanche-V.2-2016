@@ -21,7 +21,11 @@ public class MotorController {
     }
 
     //Adds motor to controller and saves it's current value as a start value.
+    //Initalizes motor to RUN_USING_ENCODERS, sets the power to 0, and the target position to it's current position.
     public void add(DcMotor motor) {
+        motor.setTargetPosition(motor.getCurrentPosition);
+        motor.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        motor.setPower(0);
         motors.add(motor);
         encoderStartValues.add(motor.getCurrentPosition());
     }
