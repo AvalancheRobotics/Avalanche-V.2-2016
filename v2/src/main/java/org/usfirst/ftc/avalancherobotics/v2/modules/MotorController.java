@@ -106,14 +106,12 @@ public class MotorController {
     }
 
     public boolean reachedTargets() {
-        boolean reached = true;
-
         for (int i = 0; i < motors.size(); i++) {
             if (!(motors.get(i).getCurrentPosition() < motors.get(i).getTargetPosition() + 5 && motors.get(i).getCurrentPosition() > motors.get(i).getTargetPosition() - 5)) {
-                reached = false;
+                return false;
             }
         }
-        return reached;
+        return true;
     }
 
     public boolean reachedTarget(int index) {
