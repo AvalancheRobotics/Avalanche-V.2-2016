@@ -35,6 +35,10 @@ public class MotorController {
         }
     }
 
+    public DcMotorController.RunMode getRunMode(int index) {
+        return motors.get(index).getMode();
+    }
+
     //Sets the runmode for all motors
     public void setRunMode(DcMotorController.RunMode runMode) {
         for (int i = 0; i < motors.size(); i++) {
@@ -59,6 +63,10 @@ public class MotorController {
         for (int i = 0; i < motors.size(); i++) {
             motors.get(i).setPower(power);
         }
+    }
+
+    public void getPower(int index) {
+        motors.get(index).getPower();
     }
 
     public void resetEncoder(int index) {
@@ -113,8 +121,12 @@ public class MotorController {
         return (motors.get(index).getCurrentPosition() < motors.get(index).getTargetPosition() + 5 && motors.get(index).getCurrentPosition() > motors.get(index).getTargetPosition() - 5);
     }
 
-    public void setTargetPosition (int index, int target) {
+    public void setTargetPosition(int index, int target) {
         motors.get(index).setTargetPosition(target + encoderStartValues.get(index));
+    }
+
+    public int getTargetPosition(int index) {
+        return motors.get(index).getCurrentPosition();
     }
 
 }
