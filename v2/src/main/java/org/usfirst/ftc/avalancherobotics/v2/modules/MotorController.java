@@ -6,8 +6,9 @@ import com.qualcomm.robotcore.hardware.DcMotorController;
 import java.util.ArrayList;
 
 /**
- * Created by austinzhang on 6/22/16.
+ * Class for use in modules to control motors. Do all motor controls though this class.
  */
+
 public class MotorController {
     private ArrayList<DcMotor> motors;
     private ArrayList<Integer> encoderStartValues;
