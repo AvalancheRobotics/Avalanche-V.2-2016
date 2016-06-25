@@ -264,10 +264,10 @@ public class AutoMaker extends SynchronousOpMode {
             e.printStackTrace();
         }
 
-        driveTrain.setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
+        driveTrain.setRunMode(DcMotorController.RunMode.RUN_TO_POSITION);
 
         //Undo current move
-        for (int i = 0; i < driveTrain.getMotors().size(); i++) {
+        for (int i = 0; i < driveTrain.size(); i++) {
             driveTrain.setTargetPosition(i, 0);
         }
 
@@ -276,11 +276,8 @@ public class AutoMaker extends SynchronousOpMode {
 
 
 
-        while (!driveTrain.reachedTarget()) {
+        while (!driveTrain.reachedTargets(5)) {
             idle();
-            telemetry.addData(driveTrain.getMotors().get(0).getCurrentPosition() - driveTrain.getMotors().get(0).getTargetPosition() + "", driveTrain.getMotors().get(1).getCurrentPosition() - driveTrain.getMotors().get(1).getTargetPosition() + "");
-            telemetry.addData(driveTrain.getMotors().get(2).getCurrentPosition() - driveTrain.getMotors().get(2).getTargetPosition() + "", driveTrain.getMotors().get(3).getCurrentPosition() - driveTrain.getMotors().get(3).getTargetPosition() + "");
-            telemetry.update();
         }
 
         String s = readFromFile();
@@ -288,7 +285,7 @@ public class AutoMaker extends SynchronousOpMode {
 
         if (endIndex == -1) {
             driveTrain.resetEncoders();
-            driveTrain.setDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+            driveTrain.setRunMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
             //Do nothing if there are no operations
             return;
         }
@@ -310,13 +307,13 @@ public class AutoMaker extends SynchronousOpMode {
 
         //Operations are reversed of what they normally are because you're undoing a move
         if (operation.substring(0, 1).equals("f")) {
-            for (int i = 0; i < driveTrain.getMotors().size(); i++) {
+            for (int i = 0; i < driveTrain.size(); i++) {
                 driveTrain.setTargetPosition(i, -ticks);
             }
         }
 
         else if (operation.substring(0, 1).equals("b")) {
-            for (int i = 0; i < driveTrain.getMotors().size(); i++) {
+            for (int i = 0; i < driveTrain.size(); i++) {
                 driveTrain.setTargetPosition(i, ticks);
             }
         }
@@ -335,7 +332,7 @@ public class AutoMaker extends SynchronousOpMode {
             driveTrain.setTargetPosition(3, ticks);
         }
 
-        while (!driveTrain.reachedTarget()) {
+        while (!driveTrain.reachedTargets(5)) {
             idle();
         }
 
@@ -351,7 +348,7 @@ public class AutoMaker extends SynchronousOpMode {
             e.printStackTrace();
         }
 
-        driveTrain.setDriveMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
+        driveTrain.setRunMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
         driveTrain.setRightDrivePower(0);
         driveTrain.setLeftDrivePower(0);
         driveTrain.resetEncoders();

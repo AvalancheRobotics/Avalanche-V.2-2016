@@ -39,10 +39,10 @@ public class AutoRunner extends SynchronousOpMode {
 
         DriveTrainController driveTrain = new DriveTrainController(motorLeftAft, motorRightAft, motorLeftFore, motorRightFore);
 
-        driveTrain.setDriveMode(DcMotorController.RunMode.RUN_TO_POSITION);
+        driveTrain.setRunMode(DcMotorController.RunMode.RUN_TO_POSITION);
 
 
-        for (int i = 0; i < driveTrain.getMotors().size(); i++) {
+        for (int i = 0; i < driveTrain.size(); i++) {
             driveTrain.setTargetPosition(i, 0);
         }
 
@@ -77,7 +77,7 @@ public class AutoRunner extends SynchronousOpMode {
         waitForStart();
 
         while ((opModeIsActive() && operations.size() > 0)) {
-            telemetry.addData("reachedTarget?", driveTrain.reachedTarget());
+            telemetry.addData("reachedTarget?", driveTrain.reachedTargets(5));
                 //Remove the firstOperation and store it separately.
                 //String currentOperation = operations.remove(operations.size() - 1);
                 String currentOperation = operations.remove(operations.size() - 1);
@@ -115,7 +115,7 @@ public class AutoRunner extends SynchronousOpMode {
                 driveTrain.setTargetPosition(1, rightPositive * ticks);
                 driveTrain.setTargetPosition(3, rightPositive * ticks);
 
-            while (!driveTrain.reachedTarget()) {
+            while (!driveTrain.reachedTargets(5)) {
                 idle();
             }
             telemetry.addData("Done", operations);

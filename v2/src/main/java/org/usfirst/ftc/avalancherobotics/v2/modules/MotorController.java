@@ -23,7 +23,7 @@ public class MotorController {
     //Adds motor to controller and saves it's current value as a start value.
     //Initalizes motor to RUN_USING_ENCODERS, sets the power to 0, and the target position to it's current position.
     public void add(DcMotor motor) {
-        motor.setTargetPosition(motor.getCurrentPosition);
+        motor.setTargetPosition(motor.getCurrentPosition());
         motor.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
         motor.setPower(0);
         motors.add(motor);
@@ -164,7 +164,12 @@ public class MotorController {
 
     //If the run mode is runToPosition return true
     public boolean runningAuto(int index) {
-        return DcMotorController.RunMode.RUN_TO_POSITION.equals(motors.get(index).getMode());
+        if (!DcMotorController.RunMode.RUN_TO_POSITION.equals(motors.get(index).getMode())) {
+            return false;
+        }
+
+        return !reachedTarget(index, 10);
+
     }
 
     //Toggles auto override.
