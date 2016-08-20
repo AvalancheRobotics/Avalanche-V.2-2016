@@ -35,7 +35,7 @@ public class StateLogger {
             Log.e("Exception", "File write failed: " + e.toString());
         }
     }
-
+/*
     private void log(HardwareState state) {
         if (firstLog) {
             startTime = System.nanoTime();
@@ -95,4 +95,5 @@ public class StateLogger {
             e.printStackTrace();
         }
     }
+    */
 }

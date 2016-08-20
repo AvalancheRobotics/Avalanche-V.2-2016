@@ -133,8 +133,8 @@ public class TeleOp6253 extends SynchronousOpMode {
     Servo servoRightZip;
 
     //Shelf servos
-    Servo servoLeftRamp;
-    Servo servoRightRamp;
+    //Servo servoLeftRamp;
+    //Servo servoRightRamp;
 
     //Servo for angling dispenser
     Servo servoTilt;
@@ -173,8 +173,8 @@ public class TeleOp6253 extends SynchronousOpMode {
         servoRightZip = hardwareMap.servo.get("RightZip");
 
         // Initialize shelf servos
-        servoLeftRamp = hardwareMap.servo.get("LeftRamp");
-        servoRightRamp = hardwareMap.servo.get("RightRamp");
+        //servoLeftRamp = hardwareMap.servo.get("LeftRamp");
+        //servoRightRamp = hardwareMap.servo.get("RightRamp");
 
         // Initialize dispenser angle servo
         servoTilt = hardwareMap.servo.get("Tilt");
@@ -227,8 +227,8 @@ public class TeleOp6253 extends SynchronousOpMode {
         servoTilt.setPosition(ValueStore.DISPENSER_NEUTRAL);
         servoLeftZip.setPosition(ValueStore.LEFT_ZIP_UP);
         servoRightZip.setPosition(ValueStore.RIGHT_ZIP_UP);
-        servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
-        servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
+        //servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
+        //servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
         servoLock.setPosition(ValueStore.LOCK_ENGAGED);
         servoTape.setPosition(.5);
         servoShuttle.setPosition(.5);
@@ -360,8 +360,8 @@ public class TeleOp6253 extends SynchronousOpMode {
 
         if (gamepad2.dpad_up) {
             setArmPosition(ArmPosition.INITIALIZE);
-            servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
-            servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
+            //servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
+            //servoRightRamp.setPosition(ValueStore.SHELF_DISPENSE_RIGHT);
         }
 
         retractSlides(gamepad2.dpad_down);
@@ -601,7 +601,7 @@ public class TeleOp6253 extends SynchronousOpMode {
             if (scoreToggle == 0) {
                 //extend slides to specified height
                 extendSlide(height);
-                toggleShelf(true);
+                //toggleShelf(true);
                 scoreToggle++;
                 return;
             }
@@ -639,7 +639,7 @@ public class TeleOp6253 extends SynchronousOpMode {
 
     private void loadDispenserSet() {
         runningLoadDispenser = true;
-        toggleShelf(false);
+        //toggleShelf(false);
         setArmPosition(ArmPosition.DISPENSE);
     }
 
@@ -655,7 +655,7 @@ public class TeleOp6253 extends SynchronousOpMode {
                 else {
                     motorHarvest.setPower(0.0);
                     setArmPosition(ArmPosition.MOUNTAIN);
-                    toggleShelf(true);
+                    //toggleShelf(true);
                     loadStep1Complete = false;
                     runningLoadDispenser = false;
                 }
@@ -785,7 +785,7 @@ public class TeleOp6253 extends SynchronousOpMode {
         }
     }
 
-    private void toggleShelf(boolean stow) {
+    /*private void toggleShelf(boolean stow) {
         if (stow) {
             servoRightRamp.setPosition(ValueStore.SHELF_STOW_RIGHT);
             servoLeftRamp.setPosition(ValueStore.SHELF_STOW_LEFT);
@@ -794,10 +794,11 @@ public class TeleOp6253 extends SynchronousOpMode {
             servoLeftRamp.setPosition(ValueStore.SHELF_DISPENSE_LEFT);
         }
     }
+    */
 
     private void startHarvest(boolean button) {
         if (button) {
-            toggleShelf(true);
+            //toggleShelf(true);
             setArmPosition(ArmPosition.HARVEST);
             motorHarvest.setPower(HARVEST_SPEED);
             runningLoadDispenser = false;

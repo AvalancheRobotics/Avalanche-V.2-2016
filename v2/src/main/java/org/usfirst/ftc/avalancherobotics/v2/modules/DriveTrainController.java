@@ -17,6 +17,9 @@ public class DriveTrainController extends MotorController {
     private boolean usingTankDrive;
     private MotorController motors;
 
+    private static final double WHEEL_DIAMETER = 10.16; //IN CM
+    private static final int TICKS_PER_ROTATION = 1120;
+
     //Constructors
 
     public DriveTrainController(DcMotor leftBack, DcMotor rightBack, DcMotor leftFront, DcMotor rightFront) {
@@ -56,7 +59,7 @@ public class DriveTrainController extends MotorController {
             if (ScaleInput.scale(leftInput) == 0 && ScaleInput.scale(rightInput) == 0) {
                 boolean runningAuto = false;
                 for (int i = 0; i < motors.size(); i++) {
-                    if (motors.runningAuto(i)) {
+                    if (motors.runningAuto(i, 5)) {
                         runningAuto = true;
                     }
                 }
@@ -80,7 +83,7 @@ public class DriveTrainController extends MotorController {
 
     //Functions by taking inputs (most likely joystick) and squaring them, providing more precise controls when moving slowly
     //When joysticks are not in use, the wheels lock in place using PID
-    public void manualDrive2(float leftInput, float rightInput) {
+    private void manualDrive2(float leftInput, float rightInput) {
         if (usingTankDrive) { //tank drive
             if (ScaleInput.scale(leftInput) == 0 && ScaleInput.scale(rightInput) == 0) {
                 for (int i = 0; i < motors.size(); i++) {
@@ -116,6 +119,19 @@ public class DriveTrainController extends MotorController {
         } else {
             motors.setPower(1, power);
         }
+    }
+
+    public int distanceTraveledBeforeReset() {
+        /** NEED ODOMETER WHEEL CURRENTLY ONLY USES WHEEL MEASUREMENT */
+
+        int totalOdometerReading = 0;
+        for (int i = 0; i < motors.size(); i++) {
+            totalOdometerReading = totalOdometerReading + motors.getEncoderValue(i);
+        }
+
+        totalOdometerReading = totalOdometerReading / motors.size();
+
+        return (int) Math.round(totalOdometerReading / TICKS_PER_ROTATION * (WHEEL_DIAMETER * Math.PI));
     }
 
 }

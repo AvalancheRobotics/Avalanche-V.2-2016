@@ -5,6 +5,7 @@ package org.usfirst.ftc.avalancherobotics.v2.modules;
  */
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorController;
 
 import org.swerverobotics.library.SynchronousOpMode;
 import org.swerverobotics.library.interfaces.TeleOp;
@@ -35,6 +36,7 @@ public class BasicDrive extends SynchronousOpMode {
     DcMotor motorRightFore;
     DcMotor motorLeftAft;
     DcMotor motorRightAft;
+    DcMotor motorHarvest;
     DriveTrainController driveTrain;
 
 
@@ -44,6 +46,9 @@ public class BasicDrive extends SynchronousOpMode {
         motorLeftFore = hardwareMap.dcMotor.get("LeftFore");
         motorRightAft = hardwareMap.dcMotor.get("RightAft");
         motorRightFore = hardwareMap.dcMotor.get("RightFore");
+        motorHarvest = hardwareMap.dcMotor.get("Harvest");
+        motorHarvest.setMode(DcMotorController.RunMode.RUN_WITHOUT_ENCODERS);
+
 
         driveTrain = new DriveTrainController(motorLeftAft, motorRightAft, motorLeftFore, motorRightFore);
 
@@ -76,37 +81,54 @@ public class BasicDrive extends SynchronousOpMode {
 
             if (updateGamepads()) {
 
-            if (ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0) {
-                if (gamepad1.left_trigger > gamepad1.right_trigger) {
-                    driveTrain.manualDrive(-gamepad1.left_trigger, -gamepad1.left_trigger);
-                } else {
-                    driveTrain.manualDrive(gamepad1.right_trigger, gamepad1.right_trigger);
+                if (ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0) {
+                    if (gamepad1.left_trigger > gamepad1.right_trigger) {
+                        driveTrain.manualDrive(-gamepad1.left_trigger, -gamepad1.left_trigger);
+                    } else {
+                        driveTrain.manualDrive(gamepad1.right_trigger, gamepad1.right_trigger);
+                    }
                 }
+
+
+                //turn right
+                if (gamepad1.right_bumper) {
+                    driveTrain.setLeftDrivePower(.2);
+                    driveTrain.setRightDrivePower(-.2);
+                }
+
+                //turn left
+                if (gamepad1.left_bumper) {
+                    driveTrain.setLeftDrivePower(-.2);
+                    driveTrain.setRightDrivePower(.2);
+                }
+
+                if (!gamepad1.left_bumper && !gamepad1.right_bumper && !(ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0)) {
+                    driveTrain.setLeftDrivePower(0);
+                    driveTrain.setRightDrivePower(0);
+                }
+
+                if (gamepad1.a) {
+                    if (motorHarvest.getPower() != -.6) {
+                        motorHarvest.setPower(-.6);
+                    }
+                    else {
+                        motorHarvest.setPower(0);
+                    }
+                }
+
+                if (gamepad1.y) {
+                    if (motorHarvest.getPower() != .7) {
+                        motorHarvest.setPower(.7);
+                    }
+                    else {
+                        motorHarvest.setPower(0);
+                    }
+                }
+
+                idle();
+
             }
-
-
-            //turn right
-            if (gamepad1.right_bumper) {
-                driveTrain.setLeftDrivePower(.2);
-                driveTrain.setRightDrivePower(-.2);
-            }
-
-            //turn left
-            if (gamepad1.left_bumper) {
-                driveTrain.setLeftDrivePower(-.2);
-                driveTrain.setRightDrivePower(.2);
-            }
-
-            if (!gamepad1.left_bumper && !gamepad1.right_bumper && !(ScaleInput.scale(gamepad1.left_trigger + gamepad1.right_trigger) > 0)) {
-                driveTrain.setLeftDrivePower(0);
-                driveTrain.setRightDrivePower(0);
-            }
-
-            idle();
-
         }
-        }
-        stop();
     }
 }
 

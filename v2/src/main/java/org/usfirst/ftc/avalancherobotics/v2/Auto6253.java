@@ -47,7 +47,6 @@ public class Auto6253 extends SynchronousOpMode {
     public static int drift;
     public static double startTime;
 
-
     //Servo Values
     private static final double RIGHT_ZIP_UP = .7956;
     private static final double RIGHT_ZIP_DOWN = 0;

@@ -21,7 +21,7 @@ public class MotorController {
     }
 
     //Adds motor to controller and saves it's current value as a start value.
-    //Initalizes motor to RUN_USING_ENCODERS, sets the power to 0, and the target position to it's current position.
+    //Initializes motor to RUN_USING_ENCODERS, sets the power to 0, and the target position to it's current position.
     public void add(DcMotor motor) {
         motor.setTargetPosition(motor.getCurrentPosition());
         motor.setMode(DcMotorController.RunMode.RUN_USING_ENCODERS);
@@ -67,9 +67,9 @@ public class MotorController {
     //sets power at given index
     //Also changes to manuel mode if manualOverride is enabled or the motor has already reached it's target
     public void setPower(int index, double power) {
-        if (getRunMode(index).equals(DcMotorController.RunMode.RUN_USING_ENCODERS) || reachedTarget(index, 5) || autoOverrideEnabled) {
+        if (!getRunMode(index).equals(DcMotorController.RunMode.RUN_TO_POSITION) || reachedTarget(index, 5) || autoOverrideEnabled) {
 
-            if (!getRunMode(index).equals(DcMotorController.RunMode.RUN_USING_ENCODERS)) {
+            if (getRunMode(index).equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
                 setRunMode(DcMotorController.RunMode.RUN_USING_ENCODERS, index);
             }
             motors.get(index).setPower(power);
@@ -78,8 +78,8 @@ public class MotorController {
     }
 
     //returns the power of the motor at the index
-    public void getPower(int index) {
-        motors.get(index).getPower();
+    public double getPower(int index) {
+        return motors.get(index).getPower();
     }
 
     //Resets the encoderStartValue at the given index to current value (faster and more reliable than hard resetting encoders)
@@ -163,12 +163,12 @@ public class MotorController {
         }
 
     //If the run mode is runToPosition return true
-    public boolean runningAuto(int index) {
+    public boolean runningAuto(int index, int threshold) {
         if (!DcMotorController.RunMode.RUN_TO_POSITION.equals(motors.get(index).getMode())) {
             return false;
         }
 
-        return !reachedTarget(index, 10);
+        return !reachedTarget(index, threshold);
 
     }
 
