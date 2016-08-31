@@ -6,7 +6,7 @@ package org.usfirst.ftc.avalancherobotics.v2.modules.autonomous;
 public class InitialField {
 
     public static Cell[][] generateField() {
-        Cell[][] field = new Cell[368][368];
+        Cell[][] field = new Cell[124][124];
 
         //First set all cells as traversable
         for (int x = 0; x < field.length; x++) {

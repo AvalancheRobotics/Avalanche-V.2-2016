@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.GyroSensor;
 import com.qualcomm.robotcore.hardware.I2cDevice;
 import com.qualcomm.robotcore.hardware.I2cDeviceReader;
 
+import org.swerverobotics.library.TelemetryDashboardAndLog;
 import org.usfirst.ftc.avalancherobotics.v2.modules.DriveTrainController;
 
 
@@ -28,6 +29,8 @@ public class Store {
     AStarPathfinder pathfinder;
     ParsePath pathrover;
     Scanner scanner;
+
+    TelemetryDashboardAndLog telemetry;
 
     byte[] rangeReadings;
 

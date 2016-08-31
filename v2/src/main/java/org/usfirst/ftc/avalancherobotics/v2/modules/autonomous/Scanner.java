@@ -24,9 +24,11 @@ public class Scanner {
 
     public void update(int distanceTraveled, int angle, int distanceToObstacle, DriveTrainController driveTrain) {
         //Update position of robot
-        double x = Math.cos(angle) * (distanceTraveled - cmDrivenBeforeTurn);
-        double y = Math.sin(angle) * (distanceTraveled - cmDrivenBeforeTurn);
+        double x = Math.cos(angle) * (distanceTraveled - cmDrivenBeforeTurn) / 3;
+        double y = Math.sin(angle) * (distanceTraveled - cmDrivenBeforeTurn) / 3;
 
+        //If the robot has turned since the last update
+        //(A turn will currently throw off the distance (no odometer wheel))
         if (lastAngle > angle - 1 && lastAngle < angle + 1) {
             driveTrain.resetEncoders(); /** EVENTUALLY REPLACE WITH ODOMETER WHEEL STUFF **/
             cmDrivenBeforeTurn = 0;
@@ -46,16 +48,20 @@ public class Scanner {
     }
 
     private void updateObstacles(int angle, int distanceToObstacle) {
-        double x = Math.cos(angle) * distanceToObstacle;
-        double y = Math.sin(angle) * distanceToObstacle;
+        if (distanceToObstacle != -1) {
+            double x = Math.cos(angle) * distanceToObstacle / 3;
+            double y = Math.sin(angle) * distanceToObstacle / 3;
 
-        int obstacleX = (int) Math.round(lastPosition.getX() + x);
-        int obstacleY = (int) Math.round(lastPosition.getY() + y);
+            int obstacleX = (int) Math.round(lastPosition.getX() + x);
+            int obstacleY = (int) Math.round(lastPosition.getY() + y);
 
-        store.field[obstacleX][obstacleY].traversable = false;
+            if (obstacleX > 0 && obstacleX < 124 && obstacleY > 0 && obstacleY < 124) {
+                store.field[obstacleX][obstacleY].traversable = false;
+            }
 
-        /** ADD STUFF FOR PREDICTING DEPTH OF OBSTACLES AFTER GAME IS ANNOUNCED.
-         * AND WE'RE ABLE TO GUESS DEPTH OF OBSTACLES BASED ON GAME OBJECTS  */
+            /** ADD STUFF FOR PREDICTING DEPTH OF OBSTACLES AFTER GAME IS ANNOUNCED.
+             * AND WE'RE ABLE TO GUESS DEPTH OF OBSTACLES BASED ON GAME OBJECTS  */
+        }
     }
 
     private int getCorrectedHeading() {

@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 
 public class MotorController {
-    private ArrayList<DcMotor> motors;
+    protected ArrayList<DcMotor> motors;
     private ArrayList<Integer> encoderStartValues;
     private boolean autoOverrideEnabled;
 
@@ -153,6 +153,7 @@ public class MotorController {
     //Sets the power and target position of the motor at the given index.
     //Automatically sets the run mode to auto mode if not already
     public void runToPosition(int index, double power, int targetPosition) {
+
         if (!getRunMode(index).equals(DcMotorController.RunMode.RUN_TO_POSITION)) {
             setRunMode(DcMotorController.RunMode.RUN_TO_POSITION, index);
         }

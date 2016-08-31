@@ -17,12 +17,6 @@ import org.usfirst.ftc.avalancherobotics.v2.modules.DriveTrainController;
 public class IntelligentAuto extends SynchronousOpMode {
     private Store store;
 
-    private void hardwareMapping() {
-        // Initialize drive motors
-        store.driveTrain = new DriveTrainController(hardwareMap.dcMotor.get("LeftBack"), hardwareMap.dcMotor.get("RightBack"), hardwareMap.dcMotor.get("LeftFront"), hardwareMap.dcMotor.get("RightFront"));
-
-        /** DECLARE MORE MOTORS/SERVOS HERE */
-    }
 
     @Override
     protected void main() throws InterruptedException {
@@ -32,8 +26,14 @@ public class IntelligentAuto extends SynchronousOpMode {
         store.pathfinder = new AStarPathfinder(store);
         store.pathrover = new ParsePath(store);
 
+        store.telemetry = telemetry;
+
         // Initialize sensors
         store.gyro = hardwareMap.gyroSensor.get("gyro");
+
+        // Initalize Drivetrain
+        store.driveTrain = new DriveTrainController(hardwareMap.dcMotor.get("LeftBack"), hardwareMap.dcMotor.get("RightBack"), hardwareMap.dcMotor.get("LeftFront"), hardwareMap.dcMotor.get("RightFront"));
+
 
         /////////////////////////////////////////
         store.gyro.calibrate();                //
@@ -59,11 +59,20 @@ public class IntelligentAuto extends SynchronousOpMode {
 
         store.offset = store.gyro.getHeading();
 
+        //STARTING POSITION
+        store.lastPosition = new Location(1,1);
+
+
         while (opModeIsActive()) {
             /** TESTING */
-            while (store.pathrover.driveToTarget(new Location(10, 10))) {
-                wait(5);
+
+
+            while (!store.pathrover.driveToTarget(new Location(10, 10)) && opModeIsActive()) {
+                idle();
             }
+
+            store.driveTrain.setLeftDrivePower(0);
+            store.driveTrain.setRightDrivePower(0);
             telemetry.addData("finished", "done");
             telemetry.update();
         }
@@ -100,7 +109,7 @@ public class IntelligentAuto extends SynchronousOpMode {
     }
 
     public void moveToLocation(Location destination) {
-        store.scanner.update(store.driveTrain.distanceTraveledBeforeReset(), getCorrectedHeading(), calibratedUltrasonic(store.rangeReadings[0]), store.driveTrain);
+        store.scanner.update(store.driveTrain.distanceTraveledBeforeReset(), getCorrectedHeading(), calibratedUltrasonic(store.rangeReader.getReadBuffer()[0]), store.driveTrain);
         store.pathfinder.findPath(store.lastPosition, destination);
     }
 }

@@ -1,6 +1,9 @@
 package org.usfirst.ftc.avalancherobotics.v2.modules.autonomous;
 
 
+import android.os.Debug;
+import android.util.Log;
+
 import java.util.LinkedList;
 
 /**
@@ -9,30 +12,42 @@ import java.util.LinkedList;
 public class ParsePath {
     private Store store;
 
-    private LinkedList<Location> simplifiedPath;
-    private LinkedList<Direction> directionPath;
 
     public ParsePath(Store store) {
         this.store = store;
     }
 
     public boolean driveToTarget(Location target) {
+        //Update Field with new obstacles and update current position
+        store.scanner.update(store.driveTrain.distanceTraveledBeforeReset(), getCorrectedHeading(), calibratedUltrasonic(store.rangeReader.getReadBuffer()[0]), store.driveTrain);
+
+        //Update AStar Path
         LinkedList<Location> pathCoordList = store.pathfinder.findPath(store.lastPosition, target);
 
+        //If there isn't currently a path keep looking for one
         if (pathCoordList == null) {
             //Keep scanning environment until path opens up
+            store.telemetry.addData("No path", "scanning");
+            store.telemetry.update();
             pivotToAngle(getCorrectedHeading() + 12);
+            store.scanner.update(store.driveTrain.distanceTraveledBeforeReset(), getCorrectedHeading(), calibratedUltrasonic(store.rangeReader.getReadBuffer()[0]), store.driveTrain);
+            pathCoordList = store.pathfinder.findPath(store.lastPosition, target);
         }
 
-        simplifyPath(pathCoordList);
+        LinkedList<Location> simplifiedPath = new LinkedList<>();
+        LinkedList<Direction> directionPath = new LinkedList<>();
 
+        //Simplify the path
+        simplifyPath(pathCoordList, simplifiedPath, directionPath);
 
+        //Target has been reached
         if (simplifiedPath.size() == 0) {
             return true;
         }
 
-
-        if (store.lastPosition.getX() > simplifiedPath.get(0).getX() - 1 //If within 1 cm of target
+        //If within 1 cm of next turn/node remove the node
+        //The positions are close enough so we can be considered on the node
+        if (store.lastPosition.getX() > simplifiedPath.get(0).getX() - 1
                 && store.lastPosition.getX() < simplifiedPath.get(0).getX() + 1
                 && store.lastPosition.getY() > simplifiedPath.get(0).getY() - 1
                 && store.lastPosition.getY() < simplifiedPath.get(0).getY() + 1
@@ -42,25 +57,40 @@ public class ParsePath {
             return false;
         }
 
+        store.telemetry.addData("path", directionPath);
+        store.telemetry.update();
+
         //Pivot to direction of target
         if (directionPath.get(0).equals(Direction.RIGHT)) {
             pivotToAngle(0);
+            //store.telemetry.addData("pivoted: ", 0);
         } else if (directionPath.get(0).equals(Direction.UP_RIGHT)) {
             pivotToAngle(45);
+            //store.telemetry.addData("pivoted: ", 45);
         } else if (directionPath.get(0).equals(Direction.UP)) {
             pivotToAngle(90);
+            //store.telemetry.addData("pivoted: ", 90);
         } else if (directionPath.get(0).equals(Direction.UP_LEFT)) {
             pivotToAngle(135);
+            //store.telemetry.addData("pivoted: ", 135);
         } else if (directionPath.get(0).equals(Direction.LEFT)) {
             pivotToAngle(180);
+            //store.telemetry.addData("pivoted: ", 180);
         } else if (directionPath.get(0).equals(Direction.DOWN_LEFT)) {
             pivotToAngle(225);
+            //store.telemetry.addData("pivoted: ", 225);
         } else if (directionPath.get(0).equals(Direction.DOWN)) {
             pivotToAngle(270);
+            //store.telemetry.addData("pivoted: ", 270);
         } else if (directionPath.get(0).equals(Direction.DOWN_RIGHT)) {
             pivotToAngle(315);
+            //store.telemetry.addData("pivoted: ", 315);
         }
+        //store.telemetry.update();
 
+        store.telemetry.addData("location", store.lastPosition);
+        store.telemetry.update();
+        //Move towards the target
         moveForwardOnHeading(simplifiedPath.get(0));
 
         return false;
@@ -69,10 +99,11 @@ public class ParsePath {
 
     // Takes in a path (list of locations) and simplifies it so that only points
     // where directions change are listed.
-    public void simplifyPath(LinkedList<Location> oldPath) {
-        simplifiedPath = new LinkedList<>();
-        directionPath = new LinkedList<>();
+    public void simplifyPath(LinkedList<Location> oldPath, LinkedList<Location> simplifiedPath, LinkedList<Direction> directionPath) {
 
+        if (oldPath == null) {
+            return;
+        }
         if (oldPath.size() == 0) {
             return;
         }
@@ -81,11 +112,14 @@ public class ParsePath {
         Location lastLocation = oldPath.get(0);
         Direction lastDirection = null;
 
-        for (int i = 1; i < oldPath.size(); i++) {
+        while (oldPath.size() != 0) {
+
             int lastX = lastLocation.getX();
             int lastY = lastLocation.getY();
-            int newX = oldPath.get(i).getX();
-            int newY = oldPath.get(i).getY();
+            int newX = oldPath.get(0).getX();
+            int newY = oldPath.get(0).getY();
+
+
 
             Direction currentDirection = null;
             //x moves right
@@ -113,18 +147,20 @@ public class ParsePath {
                 }
             }
 
+
             if (lastDirection == null) {
                 directionPath.add(currentDirection);
-            }
-            else {
-                if (currentDirection != null && !currentDirection.equals(lastDirection) || i == oldPath.size() - 1) {
-                    simplifiedPath.add(oldPath.get(i));
+            } else {
+                if ((currentDirection != null && !currentDirection.equals(lastDirection)) || oldPath.size() == 1) {
+                    simplifiedPath.add(oldPath.get(0));
                     directionPath.add(currentDirection);
                 }
             }
-
+            lastLocation = oldPath.remove(0);
             lastDirection = currentDirection;
         }
+
+        directionPath.remove(0);
 
     }
 
@@ -156,6 +192,9 @@ public class ParsePath {
 
         while (getCorrectedHeading() != target) {
             power = (target - getCorrectedHeading()) * proportionalConst;
+
+            //store.telemetry.addData("angle", getCorrectedHeading());
+            //store.telemetry.update();
 
             if (power > topCeiling)
                 power = topCeiling;
@@ -192,7 +231,8 @@ public class ParsePath {
             target = target + 360;
 
         while (heading != target) {
-            power = (target - heading) * proportionalConst;
+
+            power = Math.abs((target - heading) * proportionalConst);
 
             if (power > topCeiling)
                 power = topCeiling;
@@ -214,6 +254,8 @@ public class ParsePath {
                 store.driveTrain.setLeftDrivePower(power);
             }
 
+
+            heading = getCorrectedHeading();
         }
 
         store.driveTrain.setRightDrivePower(0);
@@ -223,17 +265,17 @@ public class ParsePath {
     public void moveForwardOnHeading(Location targetLocation) {
         Location currentLocation = store.lastPosition;
 
-        double distance = Math.round(Math.sqrt(Math.pow(targetLocation.getX() - currentLocation.getX(), 2) + Math.pow(targetLocation.getY() - currentLocation.getY(), 2)));
+        double distance = Math.round(Math.sqrt(Math.pow((targetLocation.getX() - currentLocation.getX()) * 3, 2) + Math.pow((targetLocation.getY() - currentLocation.getY()) * 3, 2)));
 
         int ticks = (int) (Store.TICKS_PER_CM * distance);
 
         double power;
-        double proportionalConst = 0.004;
+        double proportionalConst = 0.0003;
 
         double topCeiling = 1;
         double bottomCeiling = -1;
-        double topFloor = .12;
-        double bottomFloor = -.12;
+        double topFloor = .08;
+        double bottomFloor = -.08;
 
         if (distance > 0) {
             power = ticks * proportionalConst;
@@ -247,9 +289,29 @@ public class ParsePath {
             else if (power > bottomFloor && power < 0)
                 power = bottomFloor;
 
-            store.driveTrain.setLeftDrivePower(power);
-            store.driveTrain.setRightDrivePower(power);
+                store.driveTrain.setLeftDrivePower(power);
+                store.driveTrain.setRightDrivePower(power);
 
+        }
+
+    }
+
+
+    public int calibratedUltrasonic(byte reading) {
+        //convert byte to int
+        int uncalibratedDistance = reading;
+        if (uncalibratedDistance == -1) {
+            return -1;
+        }
+
+        int calibratedDistance;
+
+        if (uncalibratedDistance >= 0) {
+            return (int) (((double) uncalibratedDistance / 9) * 10);
+        } else {
+            calibratedDistance = uncalibratedDistance * -1;
+            calibratedDistance = 255 - calibratedDistance;
+            return (int) (((double) calibratedDistance / 9) * 10);
         }
     }
 }
